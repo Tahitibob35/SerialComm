@@ -3,7 +3,6 @@
 #include "serialcomm.h"
 
 
-
 SerialComm::SerialComm(HardwareSerial& s): serial(&s) {
   this->intputIndex = 0;                  // Nombre d octets recus
   this->actioncount = 0;                  // Nombre d actions definies
@@ -12,6 +11,7 @@ SerialComm::SerialComm(HardwareSerial& s): serial(&s) {
   this->outputindex = 2;                  // Nombre d octets a emettre (commence a 2 pour les donnees, 0 -> action)
   this->readindex = 3;					  // Offset de lecture
 }
+
 
 void SerialComm::begin(void) {
   return;  
@@ -60,8 +60,8 @@ void SerialComm::check_reception(void) {
       }
     }
   }
-  
 }
+
 
 /******************************************************
  Ajout d'un caractere au message
