@@ -308,3 +308,4 @@ Envoi un accuse
 bool SerialComm::sendAck( byte id ) {
   return this->sendMessage( 0, id);
 }
+
