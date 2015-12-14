@@ -38,10 +38,11 @@ void actionA (void) {
 void actionB (void) {
   int i;
   s.readInt(&i);
-  s.prepareStr("david", 5);
+  //s.prepareStr("david", 5);
+  //s.prepareInt(i);
+  //s.prepareStr("pyhtonn", 7);
   s.prepareInt(i);
-  s.prepareStr("pyhtonnnnnnnnnnnnnnnnnn", 25);
-  s.prepareInt(5);
+  s.prepareInt(s.getId());
   s.sendAck(s.getId());
   
 }
