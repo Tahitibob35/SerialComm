@@ -10,6 +10,7 @@ SerialComm::SerialComm(HardwareSerial& s): serial(&s) {
   this->receptionstarted = false;         // Message en cours de reception
   this->outputindex = 2;                  // Nombre d octets a emettre (commence a 2 pour les donnees, 0 -> action)
   this->readindex = 3;					  // Offset de lecture
+  this->acks = 0x00;                      // Id de messages disponibles
 }
 
 
@@ -309,3 +310,24 @@ bool SerialComm::sendAck( byte id ) {
   return this->sendMessage( 0, id);
 }
 
+
+/******************************************************
+Retourne un nouvel id de message
+******************************************************/
+bool SerialComm::lockMessageId( byte * id  ) {
+  for (int i=0; i<8; i++) {
+    if (bitRead(this->acks, i) == 1) {
+      *id = 1<<i;
+      bitClear(acks, i);
+      return true;
+    }
+  }
+  return false;
+}
+
+/******************************************************
+Libere un id de message
+******************************************************/
+void SerialComm::releaseMessageId( byte id  ) {
+	this->acks |= id;
+}

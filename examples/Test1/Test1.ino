@@ -36,12 +36,19 @@ void actionA (void) {
 }
 
 void actionB (void) {
-  int i;
-  s.readInt(&i);
+  int i = 0;
   //s.prepareStr("david", 5);
   //s.prepareInt(i);
   //s.prepareStr("pyhtonn", 7);
-  s.prepareInt(i);
+  s.readInt(&i);
+  if (i<80000) {
+	  s.releaseMessageId(i);
+	  s.prepareInt((int)s.acks);
+  }
+  else {
+	  s.prepareInt(33);
+  }
+
   s.prepareInt(s.getId());
   s.sendAck(s.getId());
   

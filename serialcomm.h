@@ -34,6 +34,10 @@ class SerialComm
     bool sendMessage( byte );                           // Envoi le message sans id
     bool sendAck( byte );                               // Envoi un ack
     int  getId( void );                                 // retourne l id d un message
+    bool lockMessageId( byte * );                       // Retourne un nouvel id de message
+    void releaseMessageId( byte );                     // Libere un id de message
+    byte acks;                           // Id de messages disponibles
+
      
   private:
     HardwareSerial *serial;    
