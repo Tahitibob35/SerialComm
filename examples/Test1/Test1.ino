@@ -41,16 +41,11 @@ void actionB (void) {
   //s.prepareInt(i);
   //s.prepareStr("pyhtonn", 7);
   s.readInt(&i);
-  if (i<80000) {
-	  s.releaseMessageId(i);
-	  s.prepareInt((int)s.messageids);
-  }
-  else {
-	  s.prepareInt(33);
-  }
+  s.prepareInt(i);
 
   s.prepareInt(s.getId());
-  s.sendAck(s.getId());
   
+  s.sendAck(s.getId());
+
 }
 

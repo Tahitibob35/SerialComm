@@ -18,6 +18,7 @@
 #define INPUTMSGLEN 21        //Taille max d'un message entrant
 #define OUTPUTMSGLEN 21        //Taille max d'un message entrant
 #define ACTIONSLEN 5          //nombre max d actions
+#define ACKTIMEOUT 2000
 
 class SerialComm
 {
@@ -40,7 +41,7 @@ class SerialComm
      
   private:
     HardwareSerial *serial;    
-    int commands[ACTIONSLEN];            // Tableau des actions
+    byte commands[ACTIONSLEN];            // Tableau des actions
     void (*actions[ACTIONSLEN])(void);   // Tableau des fonctions des actions
     int actioncount;                     // Nombre d actions definies
     bool esc;                            // Flag de caractere d'echappement recu
@@ -51,14 +52,18 @@ class SerialComm
     byte outputmessage[OUTPUTMSGLEN];    // Tableau receptionnant le message
     byte outputindex;                    // Nombre de caracteres recus
     
-    bool addByte( byte octet );                  // Ajoute un octet au message a envoyer
-    byte CalculChecksum(  byte * , int, int );   // Calcul du checksum
+    bool addByte( byte octet );                   // Ajoute un octet au message a envoyer
+    byte CalculChecksum(  byte * , int, int );    // Calcul du checksum
     void printInputMessage( void );
-    void addCharInInputMessage( char  );         // Ajout du caractere recu au message
-    bool ProcessMessage( void );                 // Traitement du message
-    bool safeWrite( byte );                      // Ecrit un octet en l echappant si necessaire
+    void addCharInInputMessage( char  );          // Ajout du caractere recu au message
+    bool ProcessMessage( void );                  // Traitement du message
+    bool safeWrite( byte );                       // Ecrit un octet en l echappant si necessaire
     bool waitMessage( unsigned long );            // attend l'arrivee d'un message
-    bool _sendMessage( byte , byte );                      // Envoi le message avec id
+    bool _sendMessage( byte , byte );             // Envoi le message avec id
+    bool _read( void );                           // lit les donnees du buffer serie
+    byte inputMessageGetId( void );               // Retourne l'id du message entrant
+    byte inputMessageGetAction( void );           // Retourne l'action du message entrant
+    bool inputMessageValidateChecksum( void );    // Verifie le checksum du message entrant
 };
 
 #endif

@@ -18,96 +18,83 @@ void SerialComm::begin(void) {
   return;  
 }
 
+/******************************************************
+ lit les donnees du buffer serie
+ *****************************************************/
+bool SerialComm::_read(void) {
+	byte c;                                //Caractere recu
+
+	c = this->serial->read();
+	//this->serial->print("Byte received (hex): ");
+	//this->serial->println(c, HEX);
+	//this->serial->print(",");
+	//this->serial->println(c, DEC);
+
+	// Check for frame start
+	if (c == START) {                            //Debut d'un message, restauration des donnees
+	  //this->serial->println("START");
+	  this->receptionstarted = true;
+	  this->intputIndex = 0;
+	  this->esc = false;
+	}
+	else {
+	  if (this->receptionstarted) {
+		if (c == END) {                          //Fin d'un message
+		  //this->serial->println("END");
+		  return true;;
+		}
+		else {
+		  if (c == ESC) {                        //Detection du caractere d echappement
+			this->esc = true;
+		  }
+		  else {
+			if (this->esc == true) {             //Traitement du caractere echappe
+			  if (c == TSTART) c = START;        //Conversion du caractere echappe
+			  if (c == TEND) c = END;
+			  if (c == TESC) c = ESC;
+			  this->esc = false;
+			}
+			addCharInInputMessage(c);            //Ajout d'octetconverti au message
+		  }
+		}
+	  }
+	}
+	return false;
+}
+
 
 void SerialComm::check_reception(void) {
-  byte c;                                //Caractere recu
   
-  while (this->serial->available()) {
-    c = this->serial->read();
-    //this->serial->print("Byte received (hex): ");
-    //this->serial->println(c, HEX);
-    //this->serial->print(",");
-    //this->serial->println(c, DEC);
-    
-    // Check for frame start
-    if (c == START) {                            //Debut d'un message, restauration des donnees
-      //this->serial->println("START");
-      this->receptionstarted = true;
-      this->intputIndex = 0;
-      this->esc = false;
-    }
-    else {
-      if (this->receptionstarted) {
-        if (c == END) {                          //Fin d'un message
-          //this->serial->println("END");
-          ProcessMessage();                      
-          this->intputIndex = 0;                 //Restauration des parametres par defaut
-          this->receptionstarted = false;
-        }
-        else {
-          if (c == ESC) {                        //Detection du caractere d echappement
-            this->esc = true;
-          }
-          else {
-            if (this->esc == true) {             //Traitement du caractere echappe
-              if (c == TSTART) c = START;        //Conversion du caractere echappe
-              if (c == TEND) c = END;
-              if (c == TESC) c = ESC;
-              this->esc = false;
-            }
-            addCharInInputMessage(c);            //Ajout d'octetconverti au message
-          }
-        }
-      }
+  while ( this->serial->available() ) {
+    if ( this->_read() ) {
+		if ( this->inputMessageValidateChecksum( ) ) {
+			//this->serial->print("Z");
+			this->ProcessMessage();
+			this->intputIndex = 0;                 //Restauration des parametres par defaut
+			this->receptionstarted = false;
+		}
     }
   }
 }
 
+/******************************************************
 
+ *****************************************************/
 bool SerialComm::waitMessage(unsigned long timeout) {
-  byte c;                                //Caractere recu
 
-
-
-  while ( timeout < millis() ) {
-    c = this->serial->read();
-    //this->serial->print("Byte received (hex): ");
-    //this->serial->println(c, HEX);
-    //this->serial->print(",");
-    //this->serial->println(c, DEC);
-
-    // Check for frame start
-    if (c == START) {                            //Debut d'un message, restauration des donnees
-      //this->serial->println("START");
-      this->receptionstarted = true;
-      this->intputIndex = 0;
-      this->esc = false;
-    }
-    else {
-      if (this->receptionstarted) {
-        if (c == END) {                          //Fin d'un message
-          //this->serial->println("END");
-          return true;
-        }
-        else {
-          if (c == ESC) {                        //Detection du caractere d echappement
-            this->esc = true;
-          }
-          else {
-            if (this->esc == true) {             //Traitement du caractere echappe
-              if (c == TSTART) c = START;        //Conversion du caractere echappe
-              if (c == TEND) c = END;
-              if (c == TESC) c = ESC;
-              this->esc = false;
-            }
-            addCharInInputMessage(c);            //Ajout d'octetconverti au message
-          }
-        }
-      }
-    }
+	unsigned long now = millis();
+	while ( ( millis() - now ) < ACKTIMEOUT )
+		while ( this->serial->available() ) {
+		if ( this->_read() ) {
+			//this->serial->print("Z");
+			if ( this->inputMessageValidateChecksum( ) ) {
+				//this->serial->print("checksum ok");
+				this->ProcessMessage();
+				this->intputIndex = 0;                 //Restauration des parametres par defaut
+				this->receptionstarted = false;
+			}
+		}
   }
-
-  return false;
 }
 
 
@@ -160,46 +147,48 @@ byte SerialComm::CalculChecksum( byte * data, int dstart, int dend ) {
  *****************************************************/
 bool SerialComm::ProcessMessage( void ) {
 
-  int action = 0;        
-  byte id = 0;
-  this->readindex = 3;    
-
-  // Verification du checksum
-  //this->serial->print("Message checksum : ");
-  //this->serial->println(this->inputMessage[0], HEX);
-  if (this->inputMessage[0] != this->CalculChecksum( this->inputMessage ,1 ,this->intputIndex )) {
-    //this->serial->println("Invalid checksum");
-    return false;                                           // Retour en erreur
-  }
-  // Recuperation de l id
-  id = inputMessage[1];
-  //this->serial->print("Id : ");
-  //this->serial->println(id);
-  
-  // Recuperation de l action
-  action = inputMessage[2];
-  //this->serial->print("Action : ");
-  //this->serial->println(action);
-  
-  //this->serial->print("Data : ");
-  for(int i=2; i<intputIndex; i++) {
-    //this->serial->print(this->inputMessage[i], HEX);
-    //this->serial->print(" ");
-  }
-  //this->serial->println("");
-
   // Execution des actions definies
-  for(int i=0; i < this->actioncount; i++) {
-    if (action == this->commands[i]) {
-      (*this->actions[i])();
-      break;
-    }
-  }
-  
-  return true;  
+	this->readindex = 3;
+	for(int i=0; i < this->actioncount; i++) {
+		if (this->inputMessageGetAction( ) == this->commands[i]) {
+			(*this->actions[i])();
+			break;
+		}
+	}
+	return true;
 
 }
 
+
+/******************************************************
+ Verifie le checksum du message entrant
+ *****************************************************/
+bool SerialComm::inputMessageValidateChecksum( void ) {
+
+	// Verification du checksum
+	//this->serial->print("Message checksum : ");
+	//this->serial->println(this->inputMessage[0], HEX);
+	if (this->inputMessage[0] != this->CalculChecksum( this->inputMessage ,1 ,this->intputIndex )) {
+		//this->serial->println("Invalid checksum");
+		return false;                                           // Retour en erreur
+	}
+	//this->serial->println("V");
+	return true;
+}
+
+/******************************************************
+ Retourne l'id d'un message entrant
+ *****************************************************/
+byte SerialComm::inputMessageGetId( void ) {
+	return this->inputMessage[1];
+}
+
+/******************************************************
+ Retourne l'action d'un message entrant
+ *****************************************************/
+byte SerialComm::inputMessageGetAction( void ) {
+	return this->inputMessage[2];
+}
 
 /******************************************************
  Ajout d une action
@@ -356,7 +345,7 @@ bool SerialComm::sendMessage( byte action , bool ack ) {
 	  return false;
   }
 
-  if (!this->_sendMessage( action, id)) {
+  if (!this->_sendMessage( action, id )) {
 	  return false;                                    // erreur a l'envoi du message
   }
 
@@ -370,7 +359,7 @@ bool SerialComm::sendMessage( byte action , bool ack ) {
 Envoi un accuse
 ******************************************************/
 bool SerialComm::sendAck( byte id ) {
-  return this->_sendMessage( 0, id);
+  return this->_sendMessage( 0, id );
 }
 
 
