@@ -10,7 +10,7 @@ SerialComm::SerialComm(HardwareSerial& s): serial(&s) {
   this->receptionstarted = false;         // Message en cours de reception
   this->outputindex = 2;                  // Nombre d octets a emettre (commence a 2 pour les donnees, 0 -> action)
   this->readindex = 3;					  // Offset de lecture
-  this->acks = 0x00;                      // Id de messages disponibles
+  this->messageids = 0x00;                      // Id de messages disponibles
 }
 
 
@@ -61,6 +61,53 @@ void SerialComm::check_reception(void) {
       }
     }
   }
+}
+
+
+bool SerialComm::waitMessage(unsigned long timeout) {
+  byte c;                                //Caractere recu
+
+
+
+  while ( timeout < millis() ) {
+    c = this->serial->read();
+    //this->serial->print("Byte received (hex): ");
+    //this->serial->println(c, HEX);
+    //this->serial->print(",");
+    //this->serial->println(c, DEC);
+
+    // Check for frame start
+    if (c == START) {                            //Debut d'un message, restauration des donnees
+      //this->serial->println("START");
+      this->receptionstarted = true;
+      this->intputIndex = 0;
+      this->esc = false;
+    }
+    else {
+      if (this->receptionstarted) {
+        if (c == END) {                          //Fin d'un message
+          //this->serial->println("END");
+          return true;
+        }
+        else {
+          if (c == ESC) {                        //Detection du caractere d echappement
+            this->esc = true;
+          }
+          else {
+            if (this->esc == true) {             //Traitement du caractere echappe
+              if (c == TSTART) c = START;        //Conversion du caractere echappe
+              if (c == TEND) c = END;
+              if (c == TESC) c = ESC;
+              this->esc = false;
+            }
+            addCharInInputMessage(c);            //Ajout d'octetconverti au message
+          }
+        }
+      }
+    }
+  }
+
+  return false;
 }
 
 
@@ -274,9 +321,9 @@ bool SerialComm::prepareStr( char * mystring, int slen ) {
 
 
 /******************************************************
-Envoi le message avec id
+Envoi le message
 ******************************************************/
-bool SerialComm::sendMessage( byte action , byte id) {
+bool SerialComm::_sendMessage( byte action , byte id ) {
   this->serial->write(START);                                                  // Debut de trame
   
   this->outputmessage[0] = action;                                             // Ajout de l action au debut du message
@@ -296,10 +343,26 @@ bool SerialComm::sendMessage( byte action , byte id) {
 
 
 /******************************************************
-Envoi le message sans id
+Envoi le message
 ******************************************************/
-bool SerialComm::sendMessage( byte action ) {
-  return this->sendMessage( action, 0);
+bool SerialComm::sendMessage( byte action , bool ack ) {
+  if (!ack) {                                          // Pas d'accuse demande
+	  return this->_sendMessage( action , 0);
+  }
+
+  byte id;
+
+  if ( !this->lockMessageId( &id  ) ) {                // Pas de Messageid dispo
+	  return false;
+  }
+
+  if (!this->_sendMessage( action, id)) {
+	  return false;                                    // erreur a l'envoi du message
+  }
+
+
+
+  return false;
 }
 
 
@@ -307,7 +370,7 @@ bool SerialComm::sendMessage( byte action ) {
 Envoi un accuse
 ******************************************************/
 bool SerialComm::sendAck( byte id ) {
-  return this->sendMessage( 0, id);
+  return this->_sendMessage( 0, id);
 }
 
 
@@ -316,9 +379,9 @@ Retourne un nouvel id de message
 ******************************************************/
 bool SerialComm::lockMessageId( byte * id  ) {
   for (int i=0; i<8; i++) {
-    if (bitRead(this->acks, i) == 1) {
+    if (bitRead(this->messageids, i) == 1) {
       *id = 1<<i;
-      bitClear(acks, i);
+      bitClear(this->messageids, i);
       return true;
     }
   }
@@ -329,5 +392,5 @@ bool SerialComm::lockMessageId( byte * id  ) {
 Libere un id de message
 ******************************************************/
 void SerialComm::releaseMessageId( byte id  ) {
-	this->acks |= id;
+	this->messageids |= id;
 }

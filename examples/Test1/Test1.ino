@@ -43,7 +43,7 @@ void actionB (void) {
   s.readInt(&i);
   if (i<80000) {
 	  s.releaseMessageId(i);
-	  s.prepareInt((int)s.acks);
+	  s.prepareInt((int)s.messageids);
   }
   else {
 	  s.prepareInt(33);
