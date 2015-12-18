@@ -10,7 +10,7 @@ SerialComm::SerialComm(HardwareSerial& s): serial(&s) {
   this->receptionstarted = false;         // Message en cours de reception
   this->outputindex = 2;                  // Nombre d octets a emettre (commence a 2 pour les donnees, 0 -> action)
   this->readindex = 3;					  // Offset de lecture
-  this->messageids = 0x00;                      // Id de messages disponibles
+  this->messageids = 0x00;                // Id de messages disponibles
 }
 
 
@@ -80,21 +80,30 @@ void SerialComm::check_reception(void) {
 /******************************************************
 
  *****************************************************/
-bool SerialComm::waitMessage(unsigned long timeout) {
+bool SerialComm::waitAck( byte id) {
 
 	unsigned long now = millis();
 	while ( ( millis() - now ) < ACKTIMEOUT )
 		while ( this->serial->available() ) {
-		if ( this->_read() ) {
-			//this->serial->print("Z");
-			if ( this->inputMessageValidateChecksum( ) ) {
-				//this->serial->print("checksum ok");
-				this->ProcessMessage();
-				this->intputIndex = 0;                 //Restauration des parametres par defaut
-				this->receptionstarted = false;
+			if ( this->_read() ) {
+				//this->serial->print("Z");
+				if ( this->inputMessageValidateChecksum( ) ) {
+					if ( this->inputMessageGetAction( ) != 0 ) {    // Un message
+						this->ProcessMessage();
+						this->intputIndex = 0;                      //Restauration des parametres par defaut
+						this->receptionstarted = false;
+					}
+					else {                                          // Un ack
+						if ( this->inputMessageGetAction( ) == id ) {// Ack attendu
+							return true;
+						}
+					}
+
+				}
 			}
 		}
-  }
+	return false;
+	}
 }
 
 
