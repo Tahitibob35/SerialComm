@@ -83,7 +83,7 @@ void SerialComm::check_reception(void) {
 bool SerialComm::waitAck( byte id) {
 
 	unsigned long now = millis();
-	while ( ( millis() - now ) < ACKTIMEOUT )
+	while ( ( millis() - now ) < ACKTIMEOUT ) {
 		while ( this->serial->available() ) {
 			if ( this->_read() ) {
 				//this->serial->print("Z");
@@ -102,8 +102,8 @@ bool SerialComm::waitAck( byte id) {
 				}
 			}
 		}
-	return false;
 	}
+	return false;
 }
 
 
