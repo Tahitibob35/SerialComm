@@ -344,19 +344,19 @@ bool SerialComm::_sendMessage( byte action , byte id ) {
 Envoi le message
 ******************************************************/
 bool SerialComm::sendMessage( byte action , bool ack ) {
-  if (!ack) {                                          // Pas d'accuse demande
-	  return this->_sendMessage( action , 0);
-  }
+	if (!ack) {                                          // Pas d'accuse demande
+		return this->_sendMessage( action , 0);
+	}
 
-  byte id;
+	byte id;
 
-  if ( !this->lockMessageId( &id  ) ) {                // Pas de Messageid dispo
-	  return false;
-  }
+	if ( !this->lockMessageId( &id  ) ) {                // Pas de Messageid dispo
+		return false;
+	}
 
-  if (!this->_sendMessage( action, id )) {
-	  return false;                                    // erreur a l'envoi du message
-  }
+	if (!this->_sendMessage( action, id )) {
+		return false;                                    // erreur a l'envoi du message
+	}
 
 
 
