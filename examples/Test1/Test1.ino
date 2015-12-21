@@ -18,11 +18,16 @@ void loop() {
     s.check_reception();
   }
 
-  //delay(3000);
-  
   //s.prepareInt(77);
-  //s.sendAck(2);
+  //s.prepareStr("cou", 6);
+  //s.prepareInt(77);
+  //s.prepareStr("cou", 6);
+  //s.sendMessage(2 , false);
   //Serial.println("");
+  
+
+  s.sendAck2(2, "is", 1, "coucou");
+  delay(5000);
 }
 
 void actionA (void) {
