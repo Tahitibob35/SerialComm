@@ -1,7 +1,7 @@
 
 #include "Arduino.h"
 #include "serialcomm.h"
-
+#include <stdarg.h>
 
 SerialComm::SerialComm(HardwareSerial& s): serial(&s) {
   this->intputIndex = 0;                  // Nombre d octets recus
@@ -150,6 +150,17 @@ byte SerialComm::CalculChecksum( byte * data, int dstart, int dend ) {
 
 }
 
+/******************************************************
+ Calcul du checksum
+ *****************************************************/
+void SerialComm::CalculChecksum2( byte  * checksum , byte data) {
+
+  * checksum =  * checksum ^ data;
+  //this->serial->print("Local checksum : ");
+  //this->serial->println(checksum, HEX);
+  //return checksum;
+
+}
 
 /******************************************************
  Traitement du message
@@ -344,19 +355,19 @@ bool SerialComm::_sendMessage( byte action , byte id ) {
 Envoi le message
 ******************************************************/
 bool SerialComm::sendMessage( byte action , bool ack ) {
-	if (!ack) {                                          // Pas d'accuse demande
-		return this->_sendMessage( action , 0);
-	}
+  if (!ack) {                                          // Pas d'accuse demande
+	  return this->_sendMessage( action , 0);
+  }
 
-	byte id;
+  byte id;
 
-	if ( !this->lockMessageId( &id  ) ) {                // Pas de Messageid dispo
-		return false;
-	}
+  if ( !this->lockMessageId( &id  ) ) {                // Pas de Messageid dispo
+	  return false;
+  }
 
-	if (!this->_sendMessage( action, id )) {
-		return false;                                    // erreur a l'envoi du message
-	}
+  if (!this->_sendMessage( action, id )) {
+	  return false;                                    // erreur a l'envoi du message
+  }
 
 
 
@@ -386,9 +397,83 @@ bool SerialComm::lockMessageId( byte * id  ) {
   return false;
 }
 
+
 /******************************************************
 Libere un id de message
 ******************************************************/
 void SerialComm::releaseMessageId( byte id  ) {
 	this->messageids |= id;
+}
+
+
+/******************************************************
+Envoi un message
+******************************************************/
+bool SerialComm::sendMessage2( byte action , byte id , const char * fmt , va_list args) {
+
+	byte checksum = 0;
+	const char * tmpfmt = fmt;
+
+	CalculChecksum2( &checksum , action );                   // Checksum de l'action
+	CalculChecksum2( &checksum , id );                       // Checksum de l'id
+
+	va_list args2;
+    va_copy(args2,args);
+
+	while ( *fmt != '\0' ) {
+		if ( *fmt == 'i' ) {
+			int i = va_arg( args , int );
+			CalculChecksum2( &checksum , i >> 8 );
+			CalculChecksum2( &checksum , i & 0xFF );
+		}
+		else if ( *fmt == 's' ) {
+			char * s = va_arg( args , char * );
+			while ( *s != '\0' ) {
+				CalculChecksum2( &checksum , *s );
+				s++;
+			}
+		}
+		fmt++;
+	}
+
+	this->serial->write(START);
+	this->safeWrite(checksum);
+	this->safeWrite(action);
+	this->safeWrite(id);
+
+	fmt = tmpfmt;
+
+
+
+	while ( *fmt != '\0' ) {
+		if ( *fmt == 'i' ) {
+			int i = va_arg( args2 , int );
+			this->safeWrite(i >> 8);
+			this->safeWrite(i & 0xFF);
+		}
+		else if ( *fmt == 's' ) {
+			char * s = va_arg( args2 , char * );
+			while ( *s != '\0' ) {
+				this->safeWrite( *s );
+				s++;
+			}
+			this->safeWrite( 0x00 );
+		}
+		fmt++;
+	}
+
+	this->serial->write(END);
+
+
+	return true;
+}
+
+
+/******************************************************
+Envoi un accuse
+******************************************************/
+bool SerialComm::sendAck2( byte id  , const char * fmt , ... ) {
+	va_list args;
+	va_start(args, fmt);
+	return this->sendMessage2( 0 , id , fmt  , args);
 }
