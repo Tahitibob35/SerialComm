@@ -52,6 +52,7 @@ class SerialComm
     byte outputmessage[OUTPUTMSGLEN];    // Tableau receptionnant le message
     byte outputindex;                    // Nombre de caracteres recus
     
+
     bool addByte( byte octet );                   // Ajoute un octet au message a envoyer
     byte CalculChecksum(  byte * , int, int );    // Calcul du checksum
     void printInputMessage( void );
