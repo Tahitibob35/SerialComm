@@ -114,27 +114,10 @@ void SerialComm::addCharInInputMessage( char c ) {
 }
 
 
-
 /******************************************************
  Calcul du checksum
  *****************************************************/
-byte SerialComm::CalculChecksum( byte * data, int dstart, int dend ) {
-
-  byte checksum = 0;
-
-  for(int i=dstart; i<dend; i++) {
-    checksum = checksum ^ data[i];    
-  }
-  //this->serial->print("Local checksum : ");
-  //this->serial->println(checksum, HEX);
-  return checksum;
-
-}
-
-/******************************************************
- Calcul du checksum
- *****************************************************/
-void SerialComm::CalculChecksum2( byte  * checksum , byte data) {
+void SerialComm::_checkSum( byte  * checksum , byte data) {
 
   * checksum =  * checksum ^ data;
   //this->serial->print("Local checksum : ");
@@ -167,7 +150,13 @@ bool SerialComm::inputMessageValidateChecksum( void ) {
 	// Verification du checksum
 	//this->serial->print("Message checksum : ");
 	//this->serial->println(this->inputMessage[0], HEX);
-	if (this->inputMessage[0] != this->CalculChecksum( this->inputMessage ,1 ,this->intputIndex )) {
+
+	byte checksum = 0;
+	for ( int i=1 ; i < this->intputIndex ; i++) {
+		this->_checkSum( &checksum , this->inputMessage[i] );
+	}
+
+	if ( this->inputMessage[0] != checksum ) {
 		//this->serial->println("Invalid checksum");
 		return false;                                           // Retour en erreur
 	}
@@ -301,8 +290,8 @@ bool SerialComm::_sendMessage( byte action , byte id , const char * fmt , va_lis
 	byte checksum = 0;
 	const char * tmpfmt = fmt;
 
-	CalculChecksum2( &checksum , action );                   // Checksum de l'action
-	CalculChecksum2( &checksum , id );                       // Checksum de l'id
+	this->_checkSum( &checksum , action );                   // Checksum de l'action
+	this->_checkSum( &checksum , id );                       // Checksum de l'id
 
 	va_list args2;
     va_copy(args2,args);
@@ -310,13 +299,13 @@ bool SerialComm::_sendMessage( byte action , byte id , const char * fmt , va_lis
 	while ( *fmt != '\0' ) {
 		if ( *fmt == 'i' ) {
 			int i = va_arg( args , int );
-			CalculChecksum2( &checksum , i >> 8 );
-			CalculChecksum2( &checksum , i & 0xFF );
+			this->_checkSum( &checksum , i >> 8 );
+			this->_checkSum( &checksum , i & 0xFF );
 		}
 		else if ( *fmt == 's' ) {
 			char * s = va_arg( args , char * );
 			while ( *s != '\0' ) {
-				CalculChecksum2( &checksum , *s );
+				this->_checkSum( &checksum , *s );
 				s++;
 			}
 		}

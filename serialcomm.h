@@ -41,8 +41,7 @@ class SerialComm
     byte intputIndex;                    // Nombre de caracteres recus
     byte messageids;                     // Id de messages disponibles
 
-    byte CalculChecksum(  byte * , int, int );    // Calcul du checksum
-    void CalculChecksum2( byte * , byte );        // Calcul du checksum
+    void _checkSum( byte * , byte );        // Calcul du checksum
     void addCharInInputMessage( char  );          // Ajout du caractere recu au message
     bool ProcessMessage( void );                  // Traitement du message
     bool safeWrite( byte );                       // Ecrit un octet en l echappant si necessaire
