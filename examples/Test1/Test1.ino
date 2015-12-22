@@ -18,12 +18,6 @@ void loop() {
     s.check_reception();
   }
 
-  //s.prepareInt(77);
-  //s.prepareStr("cou", 6);
-  //s.prepareInt(77);
-  //s.prepareStr("cou", 6);
-  //s.sendMessage(2 , false);
-  //Serial.println("");
   
 
   //s.sendAck2(2, "is", 1, "coucou");
@@ -31,28 +25,18 @@ void loop() {
 }
 
 void actionA (void) {
-  Serial.println(s.getId());
-  s.prepareInt(77);
-  s.sendAck(7);
-  s.prepareInt(35);
-  s.sendAck(s.getId());
   Serial.println("");
   
 }
 
 void actionB (void) {
   int i = 0;
-  //s.prepareStr("david", 5);
-  //s.prepareInt(i);
-  //s.prepareStr("pyhtonn", 7);
-  //s.readInt(&i);
-  //s.prepareInt(i);
+  int j = 0;
 
-  //s.prepareInt(s.getId());
-
-  //s.sendAck(s.getId());
+  char z[10] = "";
+  s.getData("is" , &i, &z);
   
-  s.sendAck2(s.getId(), "is" , 7 , "David");
+  s.sendAck(s.getId(), "is" , i, z);
 
 }
 
