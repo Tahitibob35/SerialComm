@@ -354,20 +354,25 @@ bool SerialComm::_sendMessage( byte action , byte id ) {
 /******************************************************
 Envoi le message
 ******************************************************/
-bool SerialComm::sendMessage( byte action , bool ack ) {
-  if (!ack) {                                          // Pas d'accuse demande
-	  return this->_sendMessage( action , 0);
-  }
+bool SerialComm::sendMessage2( byte action , bool ack , const char * fmt , ... ) {
 
-  byte id;
+	va_list args;
+	va_start(args, fmt);
 
-  if ( !this->lockMessageId( &id  ) ) {                // Pas de Messageid dispo
-	  return false;
-  }
 
-  if (!this->_sendMessage( action, id )) {
-	  return false;                                    // erreur a l'envoi du message
-  }
+	if (!ack) {                                          // Pas d'accuse demande
+		return this->_sendMessage2( action , 0 , fmt  , args);
+	}
+
+	byte id;
+
+	if ( !this->lockMessageId( &id  ) ) {                // Pas de Messageid dispo
+		return false;
+	}
+
+	if (!this->_sendMessage2( action, id  , fmt  , args)) {
+		return false;                                    // erreur a l'envoi du message
+	}
 
 
 
@@ -409,7 +414,7 @@ void SerialComm::releaseMessageId( byte id  ) {
 /******************************************************
 Envoi un message
 ******************************************************/
-bool SerialComm::sendMessage2( byte action , byte id , const char * fmt , va_list args) {
+bool SerialComm::_sendMessage2( byte action , byte id , const char * fmt , va_list args) {
 
 	byte checksum = 0;
 	const char * tmpfmt = fmt;
@@ -475,5 +480,5 @@ Envoi un accuse
 bool SerialComm::sendAck2( byte id  , const char * fmt , ... ) {
 	va_list args;
 	va_start(args, fmt);
-	return this->sendMessage2( 0 , id , fmt  , args);
+	return this->_sendMessage2( 0 , id , fmt  , args);
 }

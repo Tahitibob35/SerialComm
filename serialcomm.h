@@ -36,7 +36,7 @@ class SerialComm
     int  getId( void );                                 // retourne l id d un message
     bool lockMessageId( byte * );                       // Retourne un nouvel id de message
     void releaseMessageId( byte );                     // Libere un id de message
-    bool sendMessage2( byte , byte , const char* , va_list);  // Envoi un message
+    bool sendMessage2( byte , bool , const char * , ... );   // Envoi un message
     bool sendAck2( byte , const char * , ... );                              // Envoi un ack
     byte messageids;                           // Id de messages disponibles
 
@@ -68,6 +68,7 @@ class SerialComm
     byte inputMessageGetId( void );               // Retourne l'id du message entrant
     byte inputMessageGetAction( void );           // Retourne l'action du message entrant
     bool inputMessageValidateChecksum( void );    // Verifie le checksum du message entrant
+    bool _sendMessage2( byte , byte , const char* , va_list);  // Envoi un message
 };
 
 #endif

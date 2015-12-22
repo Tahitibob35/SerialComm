@@ -26,8 +26,8 @@ void loop() {
   //Serial.println("");
   
 
-  s.sendAck2(2, "is", 1, "coucou");
-  delay(5000);
+  //s.sendAck2(2, "is", 1, "coucou");
+  //delay(5000);
 }
 
 void actionA (void) {
@@ -45,12 +45,14 @@ void actionB (void) {
   //s.prepareStr("david", 5);
   //s.prepareInt(i);
   //s.prepareStr("pyhtonn", 7);
-  s.readInt(&i);
-  s.prepareInt(i);
+  //s.readInt(&i);
+  //s.prepareInt(i);
 
-  s.prepareInt(s.getId());
+  //s.prepareInt(s.getId());
+
+  //s.sendAck(s.getId());
   
-  s.sendAck(s.getId());
+  s.sendAck2(s.getId(), "is" , 7 , "David");
 
 }
 
