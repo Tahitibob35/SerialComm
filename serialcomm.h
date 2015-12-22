@@ -26,12 +26,10 @@ class SerialComm
     void begin(void);
     void check_reception(void);
     bool attach(int command, void (*ptrfonction)(void));
-    bool readInt(int * val);                                // Lecture d un entier
-    bool readStr(char * val, int slen);                     // Lecture d une chaine
     int  getId( void );                                     // retourne l id d un message
     bool sendMessage( byte , bool , const char * , ... );   // Envoi un message
     bool sendAck( byte , const char * , ... );              // Envoi un ack
-	bool getData(const char * , ... );                      // Renvoie les donnees d un message entrant
+	bool getData(const char * , ... );                      // Retourne les donnees d un message entrant
 
      
   private:
@@ -41,7 +39,6 @@ class SerialComm
     int actioncount;                     // Nombre d actions definies
     byte inputMessage[INPUTMSGLEN];      // Tableau receptionnant le message
     byte intputIndex;                    // Nombre de caracteres recus
-    byte readindex;                      // Offset des donnes en cours de lecture
     byte messageids;                     // Id de messages disponibles
 
     byte CalculChecksum(  byte * , int, int );    // Calcul du checksum

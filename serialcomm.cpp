@@ -6,7 +6,6 @@
 SerialComm::SerialComm(HardwareSerial& s): serial(&s) {
   this->intputIndex = 0;                  // Nombre d octets recus
   this->actioncount = 0;                  // Nombre d actions definies
-  this->readindex = 3;					  // Offset de lecture
   this->messageids = 0x00;                // Id de messages disponibles
 }
 
@@ -149,8 +148,6 @@ void SerialComm::CalculChecksum2( byte  * checksum , byte data) {
  *****************************************************/
 bool SerialComm::ProcessMessage( void ) {
 
-  // Execution des actions definies
-	this->readindex = 3;
 	for(int i=0; i < this->actioncount; i++) {
 		if (this->inputMessageGetAction( ) == this->commands[i]) {
 			(*this->actions[i])();
@@ -207,45 +204,10 @@ bool SerialComm::attach(int command, void (*ptrfonction)(void)) {
 
 
 /******************************************************
- Retourne un entier depuis le message
- *****************************************************/
-bool SerialComm::readInt( int * val ) {  
-  if (this->readindex >= this->intputIndex) return false;            // Verification de fin de message
-  *val = word(inputMessage[readindex], inputMessage[readindex + 1]); // Recompose l entier en lisant 2 octets
-  readindex += 2;                                                    // Avance le pointeur de lecture de 2 octets
-  return true;
-}
-
-
-/******************************************************
  Retourne l id du message
  *****************************************************/
 int SerialComm::getId( void ) {  
   return inputMessage[1];
-}
-
-
-/******************************************************
- Retourne une chaine depuis le message
- *****************************************************/
-bool SerialComm::readStr( char * val, int slen ) {  
-  if (this->readindex >= this->intputIndex) return false;            // Verification de fin de message
-
-  char c = 0;
-  int i = 0;
-  memset(val, 0, slen);
-  do {
-    c = inputMessage[readindex++];
-    val[i++] = c;    
-    if (i > slen) {
-      val[i - 1] = 0;                                            // Fin de chaine       
-      while (inputMessage[readindex++] != 0);                    // On avance le pointeur de lecture jusqu a la fin de la chaine
-      return false;                                              // On force la sortie
-    }
-  } while (c != 0);
-
-
-  return true;
 }
 
 
@@ -404,6 +366,9 @@ bool SerialComm::sendAck( byte id  , const char * fmt , ... ) {
 }
 
 
+/******************************************************
+Retourne les donnees d un message entrant
+******************************************************/
 bool SerialComm::getData(const char * fmt , ... ) {
 	va_list args;
 	va_start(args, fmt);
