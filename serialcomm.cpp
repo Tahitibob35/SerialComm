@@ -255,6 +255,7 @@ bool SerialComm::sendMessage( byte action , bool ack , const char * fmt , ... ) 
 	// ajouter traitement de l ack
 
 
+
   return false;
 }
 
@@ -346,12 +347,20 @@ bool SerialComm::_sendMessage( byte action , byte id , const char * fmt , va_lis
 
 
 /******************************************************
-Envoi un accuse
+Envoi un accuse avec des donnes
 ******************************************************/
 bool SerialComm::sendAck( byte id  , const char * fmt , ... ) {
 	va_list args;
 	va_start(args, fmt);
 	return this->_sendMessage( 0 , id , fmt  , args);
+}
+
+
+/******************************************************
+Envoi un accuse sans donnees
+******************************************************/
+bool SerialComm::sendAck( byte id ) {
+	return this->_sendMessage( 0 , id , "", NULL);
 }
 
 

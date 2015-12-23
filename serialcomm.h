@@ -28,7 +28,8 @@ class SerialComm
     bool attach(int command, void (*ptrfonction)(void));
     int  getId( void );                                     // retourne l id d un message
     bool sendMessage( byte , bool , const char * , ... );   // Envoi un message
-    bool sendAck( byte , const char * , ... );              // Envoi un ack
+    bool sendAck( byte , const char * , ... );              // Envoi un accuse avec des donnees
+    bool sendAck( byte id );                                // Envoi un accuse sans donnees
 	bool getData(const char * , ... );                      // Retourne les donnees d un message entrant
 
      
