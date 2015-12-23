@@ -77,15 +77,14 @@ void SerialComm::check_reception(void) {
 }
 
 /******************************************************
-
+  Attend un accuse
  *****************************************************/
-bool SerialComm::waitAck( byte id) {
+bool SerialComm::waitAck( byte id ) {
 
-	unsigned long now = millis();
+	unsigned long now = millis( );
 	while ( ( millis() - now ) < ACKTIMEOUT ) {
 		while ( this->serial->available() ) {
 			if ( this->_read() ) {
-				//this->serial->print("Z");
 				if ( this->inputMessageValidateChecksum( ) ) {
 					if ( this->inputMessageGetAction( ) != 0 ) {    // Un message
 						this->ProcessMessage();
@@ -96,7 +95,6 @@ bool SerialComm::waitAck( byte id) {
 							return true;
 						}
 					}
-
 				}
 			}
 		}
@@ -235,7 +233,6 @@ bool SerialComm::sendMessage( byte action , bool ack , const char * fmt , ... ) 
 
 	va_list args;
 	va_start(args, fmt);
-
 
 	if (!ack) {                                          // Pas d'accuse demande
 		return this->_sendMessage( action , 0 , fmt  , args);

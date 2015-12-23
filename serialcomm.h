@@ -46,7 +46,7 @@ class SerialComm
     void addCharInInputMessage( char  );          // Ajout du caractere recu au message
     bool ProcessMessage( void );                  // Traitement du message
     bool safeWrite( byte );                       // Ecrit un octet en l echappant si necessaire
-    bool waitAck( byte );            // attend l'arrivee d'un message
+    bool waitAck( byte );                         // attend l'arrivee d'un ack
     bool _sendMessage( byte , byte );             // Envoi le message avec id
     bool _read( void );                           // lit les donnees du buffer serie
     byte inputMessageGetId( void );               // Retourne l'id du message entrant
