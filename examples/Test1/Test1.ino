@@ -36,7 +36,7 @@ void actionB (void) {
   char z[10] = "";
   s.getData("i" , &i);
   
-  s.sendAck(s.getId() , "i", i);
+//s.sendAck(s.getId() , "i", i);
 
 }
 
