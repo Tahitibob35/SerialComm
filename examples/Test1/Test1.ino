@@ -4,6 +4,8 @@
 
 SerialComm s(Serial);
 
+int i = 0;
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
@@ -18,10 +20,10 @@ void loop() {
     s.check_reception();
   }
 
-  
 
-  //s.sendAck2(2, "is", 1, "coucou");
-  //delay(5000);
+  
+  delay(1000);
+  s.sendMessage(2, false, "is", i++, "David");
 }
 
 void actionA (void) {
@@ -34,9 +36,11 @@ void actionB (void) {
   int j = 0;
 
   char z[10] = "";
-  s.getData("i" , &i);
+  s.getData("is" , &i, &z);
   
-//s.sendAck(s.getId() , "i", i);
+  //s.sendMessage(2, false, "i", 3);
+
+  s.sendAck(s.getId() , "is", i, z);
 
 }
 
