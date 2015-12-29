@@ -22,8 +22,8 @@ void loop() {
 
 
   
-  delay(1000);
-  s.sendMessage(2, false, "is", i++, "David");
+  //delay(1000);
+  s.sendMessage(2, false, "is", i++, "from Arduino");
 }
 
 void actionA (void) {
