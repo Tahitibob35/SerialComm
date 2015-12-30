@@ -31,6 +31,7 @@ class SerialComm
     bool sendAck( byte , const char * , ... );              // Envoi un accuse avec des donnees
     bool sendAck( byte id );                                // Envoi un accuse sans donnees
 	bool getData(const char * , ... );                      // Retourne les donnees d un message entrant
+    bool lockMessageId( byte * );                       // Retourne un nouvel id de message
 
      
   private:
@@ -53,7 +54,6 @@ class SerialComm
     byte inputMessageGetAction( void );           // Retourne l'action du message entrant
     bool inputMessageValidateChecksum( void );    // Verifie le checksum du message entrant
     bool _sendMessage( byte , byte , const char* , va_list);  // Envoi un message
-    bool lockMessageId( byte * );                       // Retourne un nouvel id de message
     void releaseMessageId( byte );                     // Libere un id de message
 };
 

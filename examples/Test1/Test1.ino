@@ -6,11 +6,14 @@ SerialComm s(Serial);
 
 int i = 0;
 
+int ledstatus = HIGH;
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
   s.begin();
   s.attach(2, actionB);
+  pinMode(13, OUTPUT);
 }
 
 void loop() {
@@ -23,7 +26,16 @@ void loop() {
 
   
   delay(1000);
-  s.sendMessage(2, false, "is", i, "from Arduino");
+  if ( s.sendMessage( 2 , true , "is" , i , "from Arduino" ) ) {
+
+
+	  s.getData( "i" , &i );
+  }
+  //byte id;
+  //s.lockMessageId( &id  );
+  //Serial.println(id);
+
+
 }
 
 void actionA (void) {

@@ -6,7 +6,7 @@
 SerialComm::SerialComm(HardwareSerial& s): serial(&s) {
   this->intputIndex = 0;                  // Nombre d octets recus
   this->actioncount = 0;                  // Nombre d actions definies
-  this->messageids = 0x00;                // Id de messages disponibles
+  this->messageids = 0xFF;                // Id de messages disponibles
 }
 
 
@@ -91,7 +91,7 @@ bool SerialComm::waitAck( byte id ) {
 						this->intputIndex = 0;                      //Restauration des parametres par defaut
 					}
 					else {                                          // Un ack
-						if ( this->inputMessageGetAction( ) == id ) {// Ack attendu
+						if ( this->inputMessageGetId( ) == id ) {// Ack attendu
 							return true;
 						}
 					}
@@ -235,7 +235,7 @@ bool SerialComm::sendMessage( byte action , bool ack , const char * fmt , ... ) 
 	va_start(args, fmt);
 
 	if (!ack) {                                          // Pas d'accuse demande
-		return this->_sendMessage( action , 0 , fmt  , args);
+		return this->_sendMessage( action , 0 , fmt  , args );
 	}
 
 	byte id;
@@ -244,16 +244,18 @@ bool SerialComm::sendMessage( byte action , bool ack , const char * fmt , ... ) 
 		return false;
 	}
 
-	if (!this->_sendMessage( action, id  , fmt  , args)) {
+	if (!this->_sendMessage( action , id  , fmt  , args )) {
 		this->releaseMessageId( id  );
 		return false;                                    // erreur a l'envoi du message
 	}
 
 	// ajouter traitement de l ack
+    if (!this->waitAck( id ))
+    	this->releaseMessageId( id  );
+    	return false;
 
-
-
-  return false;
+    this->releaseMessageId( id  );
+    return true;
 }
 
 
@@ -261,13 +263,20 @@ bool SerialComm::sendMessage( byte action , bool ack , const char * fmt , ... ) 
 Retourne un nouvel id de message
 ******************************************************/
 bool SerialComm::lockMessageId( byte * id  ) {
+	//Serial.print("Messageids : ");
+	//Serial.println(this->messageids);
   for (int i=0; i<8; i++) {
+	  //Serial.print("bit / valeur: ");
+	  //Serial.print(i);
+	  //Serial.print("    ");
+	  //Serial.println(bitRead(this->messageids, i));
     if (bitRead(this->messageids, i) == 1) {
       *id = 1<<i;
       bitClear(this->messageids, i);
       return true;
     }
   }
+  digitalWrite(13, HIGH);
   return false;
 }
 
