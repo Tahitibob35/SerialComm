@@ -23,7 +23,7 @@ void loop() {
 
   
   //delay(1000);
-  s.sendMessage(2, false, "is", i++, "from Arduino");
+  //s.sendMessage(2, false, "is", i++, "from Arduino");
 }
 
 void actionA (void) {
@@ -39,8 +39,9 @@ void actionB (void) {
   s.getData("is" , &i, &z);
   
   //s.sendMessage(2, false, "i", 3);
-
-  s.sendAck(s.getId() , "is", i, z);
+  delay(5000);
+  //s.sendAck(s.getId() , "is", i, z);
+  s.sendAck(6 , "is", i, z);
 
 }
 
