@@ -3,9 +3,9 @@
 #include "serialcomm.h"
 #include <stdarg.h>
 
-SerialComm::SerialComm(HardwareSerial& s): serial(&s) {
-  this->intputIndex = 0;                  // Nombre d octets recus
-  this->actioncount = 0;                  // Nombre d actions definies
+SerialComm::SerialComm(HardwareSerial& s): _serial(&s) {
+  this->_intputIndex = 0;                  // Nombre d octets recus
+  this->_actioncount = 0;                  // Nombre d actions definies
 }
 
 
@@ -22,7 +22,7 @@ bool SerialComm::_read(void) {
 	static bool esc = false;               // Caractere suivant special
 	static bool receptionstarted = false;
 
-	c = this->serial->read();
+	c = this->_serial->read();
 	//this->serial->print("Byte received (hex): ");
 	//this->serial->println(c, HEX);
 	//this->serial->print(",");
@@ -32,7 +32,7 @@ bool SerialComm::_read(void) {
 	if (c == START) {                            //Debut d'un message, restauration des donnees
 	  //this->serial->println("START");
 	  receptionstarted = true;
-	  this->intputIndex = 0;
+	  this->_intputIndex = 0;
 	  esc = false;
 	}
 	else {
@@ -53,7 +53,7 @@ bool SerialComm::_read(void) {
 			  if (c == TESC) c = ESC;
 			  esc = false;
 			}
-			addCharInInputMessage(c);            //Ajout d'octetconverti au message
+			this->_addCharInInputMessage(c);            //Ajout d'octetconverti au message
 		  }
 		}
 	  }
@@ -64,12 +64,12 @@ bool SerialComm::_read(void) {
 
 void SerialComm::check_reception(void) {
   
-  while ( this->serial->available() ) {
+  while ( this->_serial->available() ) {
     if ( this->_read() ) {
-		if ( this->inputMessageValidateChecksum( ) ) {
+		if ( this->_inputMessageValidateChecksum( ) ) {
 			//this->serial->print("Z");
-			this->ProcessMessage();
-			this->intputIndex = 0;                 //Restauration des parametres par defaut
+			this->_processMessage();
+			this->_intputIndex = 0;                 //Restauration des parametres par defaut
 		}
     }
   }
@@ -78,19 +78,19 @@ void SerialComm::check_reception(void) {
 /******************************************************
   Attend un accuse
  *****************************************************/
-bool SerialComm::waitAck( byte id ) {
+bool SerialComm::_waitAck( byte id ) {
 
 	unsigned long now = millis( );
 	while ( ( millis() - now ) < ACKTIMEOUT ) {
-		while ( this->serial->available() ) {
+		while ( this->_serial->available() ) {
 			if ( this->_read() ) {
-				if ( this->inputMessageValidateChecksum( ) ) {
-					if ( this->inputMessageGetAction( ) != 0 ) {    // Un message
-						this->ProcessMessage();
-						this->intputIndex = 0;                      //Restauration des parametres par defaut
+				if ( this->_inputMessageValidateChecksum( ) ) {
+					if ( this->_inputMessageGetAction( ) != 0 ) {    // Un message
+						this->_processMessage();
+						this->_intputIndex = 0;                      //Restauration des parametres par defaut
 					}
 					else {                                          // Un ack
-						if ( this->inputMessageGetId( ) == id ) {// Ack attendu
+						if ( this->getId( ) == id ) {// Ack attendu
 							return true;
 						}
 					}
@@ -105,9 +105,9 @@ bool SerialComm::waitAck( byte id ) {
 /******************************************************
  Ajout d'un caractere au message
  *****************************************************/
-void SerialComm::addCharInInputMessage( char c ) {
-  if (this->intputIndex < INPUTMSGLEN) 
-    this->inputMessage[this->intputIndex++] = c;
+void SerialComm::_addCharInInputMessage( char c ) {
+  if (this->_intputIndex < INPUTMSGLEN)
+    this->_inputMessage[this->_intputIndex++] = c;
 }
 
 
@@ -126,11 +126,11 @@ void SerialComm::_checkSum( byte  * checksum , byte data) {
 /******************************************************
  Traitement du message
  *****************************************************/
-bool SerialComm::ProcessMessage( void ) {
+bool SerialComm::_processMessage( void ) {
 
-	for(int i=0; i < this->actioncount; i++) {
-		if (this->inputMessageGetAction( ) == this->commands[i]) {
-			(*this->actions[i])();
+	for(int i=0; i < this->_actioncount; i++) {
+		if (this->_inputMessageGetAction( ) == this->_commands[i]) {
+			(*this->_actions[i])();
 			break;
 		}
 	}
@@ -142,18 +142,18 @@ bool SerialComm::ProcessMessage( void ) {
 /******************************************************
  Verifie le checksum du message entrant
  *****************************************************/
-bool SerialComm::inputMessageValidateChecksum( void ) {
+bool SerialComm::_inputMessageValidateChecksum( void ) {
 
 	// Verification du checksum
 	//this->serial->print("Message checksum : ");
 	//this->serial->println(this->inputMessage[0], HEX);
 
 	byte checksum = 0;
-	for ( int i=1 ; i < this->intputIndex ; i++) {
-		this->_checkSum( &checksum , this->inputMessage[i] );
+	for ( int i=1 ; i < this->_intputIndex ; i++) {
+		this->_checkSum( &checksum , this->_inputMessage[i] );
 	}
 
-	if ( this->inputMessage[0] != checksum ) {
+	if ( this->_inputMessage[0] != checksum ) {
 		//this->serial->println("Invalid checksum");
 		return false;                                           // Retour en erreur
 	}
@@ -161,31 +161,25 @@ bool SerialComm::inputMessageValidateChecksum( void ) {
 	return true;
 }
 
-/******************************************************
- Retourne l'id d'un message entrant
- *****************************************************/
-byte SerialComm::inputMessageGetId( void ) {
-	return this->inputMessage[1];
-}
 
 /******************************************************
  Retourne l'action d'un message entrant
  *****************************************************/
-byte SerialComm::inputMessageGetAction( void ) {
-	return this->inputMessage[2];
+byte SerialComm::_inputMessageGetAction( void ) {
+	return this->_inputMessage[2];
 }
 
 /******************************************************
  Ajout d une action
  *****************************************************/
 bool SerialComm::attach(int command, void (*ptrfonction)(void)) {
-  if (actioncount < ACTIONSLEN) {
-    actions[actioncount] = ptrfonction;
-    commands[actioncount] = command;
-    actioncount++;
-    return true;
-  }
-  return false;
+	if (this->_actioncount < ACTIONSLEN) {
+		this->_actions[this->_actioncount] = ptrfonction;
+		this->_commands[this->_actioncount] = command;
+		this->_actioncount++;
+		return true;
+	}
+	return false;
 }
 
 
@@ -193,29 +187,29 @@ bool SerialComm::attach(int command, void (*ptrfonction)(void)) {
  Retourne l id du message
  *****************************************************/
 int SerialComm::getId( void ) {  
-  return inputMessage[1];
+  return _inputMessage[1];
 }
 
 
 /******************************************************
  Ecrit un octet en l echappant si necessaire
  *****************************************************/
-bool SerialComm::safeWrite(byte octet) {
+bool SerialComm::_safeWrite(byte octet) {
   switch (octet) {
     case START:
-      this->serial->write(ESC);
-      this->serial->write(TSTART);
+      this->_serial->write(ESC);
+      this->_serial->write(TSTART);
       break;
     case END:
-      this->serial->write(ESC);
-      this->serial->write(TEND);
+      this->_serial->write(ESC);
+      this->_serial->write(TEND);
       break;
     case ESC:
-      this->serial->write(ESC);
-      this->serial->write(TESC);
+      this->_serial->write(ESC);
+      this->_serial->write(TESC);
       break;
     default:
-      this->serial->write(octet);
+      this->_serial->write(octet);
       break;
   }      
   return true;
@@ -239,14 +233,14 @@ bool SerialComm::sendMessage( byte action , bool ack , const char * fmt , ... ) 
 
 	byte id;
 
-	id = this->getNewMessageId();
+	id = this->_getNewMessageId();
 
 	if (!this->_sendMessage( action , id  , fmt  , args )) {
 		return false;                                    // erreur a l'envoi du message
 	}
 
 	// ajouter traitement de l ack
-    if (!this->waitAck( id ))
+    if (!this->_waitAck( id ))
     	return false;
 
    return true;
@@ -256,7 +250,7 @@ bool SerialComm::sendMessage( byte action , bool ack , const char * fmt , ... ) 
 /******************************************************
 Retourne un nouvel id de message
 ******************************************************/
-int SerialComm::getNewMessageId( void  ) {
+int SerialComm::_getNewMessageId( void  ) {
 	static unsigned int id = 0;
 	return id++;
 }
@@ -292,10 +286,10 @@ bool SerialComm::_sendMessage( byte action , byte id , const char * fmt , va_lis
 		fmt++;
 	}
 
-	this->serial->write(START);
-	this->safeWrite(checksum);
-	this->safeWrite(action);
-	this->safeWrite(id);
+	this->_serial->write(START);
+	this->_safeWrite(checksum);
+	this->_safeWrite(action);
+	this->_safeWrite(id);
 
 	fmt = tmpfmt;
 
@@ -304,21 +298,21 @@ bool SerialComm::_sendMessage( byte action , byte id , const char * fmt , va_lis
 	while ( *fmt != '\0' ) {
 		if ( *fmt == 'i' ) {
 			int i = va_arg( args2 , int );
-			this->safeWrite(i >> 8);
-			this->safeWrite(i & 0xFF);
+			this->_safeWrite(i >> 8);
+			this->_safeWrite(i & 0xFF);
 		}
 		else if ( *fmt == 's' ) {
 			char * s = va_arg( args2 , char * );
 			while ( *s != '\0' ) {
-				this->safeWrite( *s );
+				this->_safeWrite( *s );
 				s++;
 			}
-			this->safeWrite( 0x00 );
+			this->_safeWrite( 0x00 );
 		}
 		fmt++;
 	}
 
-	this->serial->write(END);
+	this->_serial->write(END);
 
 
 	return true;
@@ -353,12 +347,12 @@ bool SerialComm::getData(const char * fmt , ... ) {
 	int readindex = 3;
 
 	while (*fmt != '\0') {
-		if (readindex >= this->intputIndex) return false;            // Verification de fin de message
+		if (readindex >= this->_intputIndex) return false;            // Verification de fin de message
 		switch (*fmt) {
 		case 'i' :
 			{
 				int * i = va_arg(args, int * );
-				*i = word(inputMessage[readindex], inputMessage[readindex + 1]); // Recompose l entier en lisant 2 octets
+				*i = word(_inputMessage[readindex], _inputMessage[readindex + 1]); // Recompose l entier en lisant 2 octets
 				readindex += 2;
 				break;
 			}
@@ -368,7 +362,7 @@ bool SerialComm::getData(const char * fmt , ... ) {
 				char c = 0;
 				int j = 0;
 				do {
-					c = inputMessage[readindex++];
+					c = _inputMessage[readindex++];
 					s[j++] = c;
 				} while (c != 0);
 				break;

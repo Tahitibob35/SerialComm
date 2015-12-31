@@ -25,8 +25,8 @@ void loop() {
 
 
   
-  delay(500);
-  if ( s.sendMessage( 2 , true , "is" , i , "from Arduino" ) ) {
+  //delay(500);
+  if ( s.sendMessage( 2 , true , "i" , i) ) {
 	  s.getData( "i" , &i );
   }
   //byte id;
@@ -43,15 +43,12 @@ void actionA (void) {
 
 void actionB (void) {
 
-  int j = 0;
-  Serial.print("hj");
-
-  char z[30] = "";
+  //char z[30] = "";
   //s.getData("is" , &i, &z);
   
   //s.sendMessage(2, false, "i", 3);
 
-  s.sendAck(s.getId() , "is", i, "i set");
+  s.sendAck(s.getId() , "i", i);
 
 }
 
