@@ -37,7 +37,7 @@ class SerialComm
     HardwareSerial *_serial;
     byte _commands[ACTIONSLEN];           // Tableau des actions
     void (*_actions[ACTIONSLEN])(void);   // Tableau des fonctions des actions
-    int _actioncount;                     // Nombre d actions definies
+    int  _actioncount;                     // Nombre d actions definies
     byte _inputMessage[INPUTMSGLEN];      // Tableau receptionnant le message
     byte _intputIndex;                    // Nombre de caracteres recus
 
