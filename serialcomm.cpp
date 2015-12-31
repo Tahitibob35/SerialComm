@@ -6,7 +6,6 @@
 SerialComm::SerialComm(HardwareSerial& s): serial(&s) {
   this->intputIndex = 0;                  // Nombre d octets recus
   this->actioncount = 0;                  // Nombre d actions definies
-  this->messageids = 0xFF;                // Id de messages disponibles
 }
 
 
@@ -240,52 +239,26 @@ bool SerialComm::sendMessage( byte action , bool ack , const char * fmt , ... ) 
 
 	byte id;
 
-	if ( !this->lockMessageId( &id  ) ) {                // Pas de Messageid dispo
-		return false;
-	}
+	id = this->getNewMessageId();
 
 	if (!this->_sendMessage( action , id  , fmt  , args )) {
-		this->releaseMessageId( id  );
 		return false;                                    // erreur a l'envoi du message
 	}
 
 	// ajouter traitement de l ack
     if (!this->waitAck( id ))
-    	this->releaseMessageId( id  );
     	return false;
 
-    this->releaseMessageId( id  );
-    return true;
+   return true;
 }
 
 
 /******************************************************
 Retourne un nouvel id de message
 ******************************************************/
-bool SerialComm::lockMessageId( byte * id  ) {
-	//Serial.print("Messageids : ");
-	//Serial.println(this->messageids);
-  for (int i=0; i<8; i++) {
-	  //Serial.print("bit / valeur: ");
-	  //Serial.print(i);
-	  //Serial.print("    ");
-	  //Serial.println(bitRead(this->messageids, i));
-    if (bitRead(this->messageids, i) == 1) {
-      *id = 1<<i;
-      bitClear(this->messageids, i);
-      return true;
-    }
-  }
-  digitalWrite(13, HIGH);
-  return false;
-}
-
-
-/******************************************************
-Libere un id de message
-******************************************************/
-void SerialComm::releaseMessageId( byte id  ) {
-	this->messageids |= id;
+int SerialComm::getNewMessageId( void  ) {
+	static unsigned int id = 0;
+	return id++;
 }
 
 
