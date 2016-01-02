@@ -3,9 +3,15 @@
 #include "serialcomm.h"
 #include <stdarg.h>
 
+#include <SoftwareSerial.h>
+
+
+SoftwareSerial mySerial(10, 11); // RX, TX
+
 SerialComm::SerialComm(HardwareSerial& s): _serial(&s) {
   this->_intputIndex = 0;                  // Nombre d octets recus
   this->_actioncount = 0;                  // Nombre d actions definies
+  mySerial.begin(9600);
 }
 
 
@@ -27,6 +33,8 @@ bool SerialComm::_read(void) {
 	//this->serial->println(c, HEX);
 	//this->serial->print(",");
 	//this->serial->println(c, DEC);
+	//mySerial.print(c, HEX);
+	//mySerial.print(" ");
 
 	// Check for frame start
 	if (c == START) {                            //Debut d'un message, restauration des donnees
@@ -40,6 +48,7 @@ bool SerialComm::_read(void) {
 		if (c == END) {                          //Fin d'un message
 		  //this->serial->println("END");
 		  receptionstarted = false;
+		  //mySerial.println("");
 		  return true;;
 		}
 		else {
@@ -155,6 +164,16 @@ bool SerialComm::_inputMessageValidateChecksum( void ) {
 
 	if ( this->_inputMessage[0] != checksum ) {
 		//this->serial->println("Invalid checksum");
+
+
+		mySerial.println("Invalid checksum !");
+		/*for ( int i=1 ; i < this->_intputIndex ; i++) {
+			mySerial.println(this->_inputMessage[i], HEX);
+		}*/
+
+
+
+
 		return false;                                           // Retour en erreur
 	}
 	//this->serial->println("V");
@@ -177,6 +196,7 @@ bool SerialComm::attach(int command, void (*ptrfonction)(void)) {
 		this->_actions[this->_actioncount] = ptrfonction;
 		this->_commands[this->_actioncount] = command;
 		this->_actioncount++;
+		//mySerial.println("attach");
 		return true;
 	}
 	return false;
@@ -199,17 +219,24 @@ bool SerialComm::_safeWrite(byte octet) {
     case START:
       this->_serial->write(ESC);
       this->_serial->write(TSTART);
+      //mySerial.print(ESC, HEX);
+      //mySerial.print(TSTART, HEX);
       break;
     case END:
       this->_serial->write(ESC);
       this->_serial->write(TEND);
+      //mySerial.print(ESC, HEX);
+      //mySerial.print(TEND, HEX);
       break;
     case ESC:
       this->_serial->write(ESC);
       this->_serial->write(TESC);
+      //mySerial.print(ESC, HEX);
+      //mySerial.print(TESC, HEX);
       break;
     default:
       this->_serial->write(octet);
+      //mySerial.print(octet, HEX);
       break;
   }      
   return true;
@@ -287,6 +314,7 @@ bool SerialComm::_sendMessage( byte action , byte id , const char * fmt , va_lis
 	}
 
 	this->_serial->write(START);
+    //mySerial.print(START, HEX);
 	this->_safeWrite(checksum);
 	this->_safeWrite(action);
 	this->_safeWrite(id);
@@ -313,6 +341,7 @@ bool SerialComm::_sendMessage( byte action , byte id , const char * fmt , va_lis
 	}
 
 	this->_serial->write(END);
+    //mySerial.print(END, HEX);
 
 
 	return true;
