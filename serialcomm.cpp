@@ -8,7 +8,7 @@
 
 SoftwareSerial mySerial(10, 11); // RX, TX
 
-SerialComm::SerialComm(HardwareSerial& s): _serial(&s) {
+SerialComm::SerialComm(Stream & s): _serial(&s) {
   this->_intputIndex = 0;                  // Nombre d octets recus
   this->_actioncount = 0;                  // Nombre d actions definies
   mySerial.begin(9600);

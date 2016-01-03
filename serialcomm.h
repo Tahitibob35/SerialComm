@@ -22,7 +22,7 @@
 class SerialComm
 {
   public:
-    SerialComm(HardwareSerial &s);
+    SerialComm(Stream &s);
     void begin(void);
     void check_reception(void);
     bool attach(int command, void (*ptrfonction)(void));
@@ -34,7 +34,7 @@ class SerialComm
 
      
   private:
-    HardwareSerial *_serial;
+	Stream *_serial;
     byte _commands[ACTIONSLEN];           // Tableau des actions
     void (*_actions[ACTIONSLEN])(void);   // Tableau des fonctions des actions
     int  _actioncount;                     // Nombre d actions definies
