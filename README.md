@@ -9,29 +9,32 @@ This arduino library simplify serial communications between arduinos, or between
 
 # Examples
 
-## 1 - Python -> Arduino, Without ack
+## 1 - Python -> Arduino, without ack
 
 Arduino receiver code
 ```c
 SerialComm s(Serial);
 
-void remoteAnalogRead( void ) {
-    int value;
-    s.getData("i", &value);
+void remoteAnalogWrite( void ) {
+    int pin = 0;
+    int value = 0;
+    s.getData("ii", &pin, &value);
+    analogWrite(pin, value);
 }
 
 void setup() {
-  s.attach(2, actionB);
+  s.attach(2, remoteAnalogWrite);
 }
 ```
 
 Python sender script
 ```python
-i = 100
-resp = ard.sendmessage(2, (i,), ack=False)
+pin = 9
+value = 120
+resp = ard.sendmessage(2, (pin,value), ack=False)
 ```
 
-## 2 - Python -> Arduino, With ack
+## 2 - Python -> Arduino, with ack
 
 ### Arduino receiver code
 
@@ -39,22 +42,23 @@ resp = ard.sendmessage(2, (i,), ack=False)
 SerialComm s(Serial);
 
 void remoteAnalogRead( void ) {
-    int value;
-    s.getData("i", &value);
-    char another_string[20] = "The response";
-    s.sendAck(s.getId() , "s", another_string);
+    int pin;
+    s.getData("i", &pin);
+    int value = analogRead(pin);
+    s.sendAck(s.getId() , "i", value);
 }
 
 void setup() {
-  s.attach(2, actionB);
+  s.attach(2, remoteAnalogRead);
 }
 ```
 
 ### Python sender script
 ```python
-i = 100
+pin = 5
 resp = ard.sendmessage(2, (i,), ack=False)
 values = ard.parsedata("s", resp)
+pin_value = values[0]
 ```
 
 
