@@ -29,9 +29,10 @@ void setup() {
 
 Python sender script
 ```python
+arduino = SerialComm('/dev/ttyUSB0', baudrate=115200)
 pin = 9
 value = 120
-resp = ard.sendmessage(2, (pin,value), ack=False)
+resp = arduino.sendmessage(2, (pin,value), ack=False)
 ```
 
 ## 2 - Python -> Arduino, with ack
@@ -55,9 +56,10 @@ void setup() {
 
 ### Python sender script
 ```python
+arduino = SerialComm('/dev/ttyUSB0', baudrate=115200)
 pin = 5
-resp = ard.sendmessage(2, (i,), ack=False)
-values = ard.parsedata("s", resp)
+resp = arduino.sendmessage(2, (i,), ack=True)
+values = arduino.parsedata("i", resp)
 pin_value = values[0]
 ```
 
