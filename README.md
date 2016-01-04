@@ -2,9 +2,12 @@
 
 # About
 
-This arduino library simplify serial communications between arduinos, or between an arduino baord and a python script (https://github.com/Tahitibob35/pySerialComm).
-- Attach actions to function
-- Simply send and receive strings or integer
+This arduino library simplifies serial communications between arduinos, or between an arduino board and a python script (https://github.com/Tahitibob35/pySerialComm).
+
+# Features
+
+- Attach actions to functions
+- Simply send and receive strings or integers
 - Manage acknowledgments
 
 # Examples
