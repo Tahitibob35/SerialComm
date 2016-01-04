@@ -25,7 +25,7 @@ void loop() {
     s.check_reception();
   }
 
-  /*unsigned long currentMillis = millis();
+  unsigned long currentMillis = millis();
 
 	if (currentMillis - previousMillis >= interval) {
 	  // save the last time you blinked the LED
@@ -36,7 +36,7 @@ void loop() {
 	  if ( s.sendMessage( 2 , true , "i" , i) ) {
 		  s.getData( "i" , &i );
 	  }
-	}*/
+	}
   //byte id;
   //s.lockMessageId( &id  );
   //Serial.println(id);
@@ -51,10 +51,9 @@ void actionA (void) {
 
 void actionB (void) {
 
-  char z[3] = "";
+  char z[20] = "";
+
   s.getData("is" , &i, &z, sizeof(z));
-  
-  //s.sendMessage(2, false, "i", 3);
 
   s.sendAck(s.getId() , "is", i, z);
 
