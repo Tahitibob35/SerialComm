@@ -1,7 +1,6 @@
 
 #include "serialcomm.h"
 
-
 SerialComm s(Serial);
 
 int i = 0;
