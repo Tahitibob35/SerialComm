@@ -3,58 +3,51 @@
 
 SerialComm s(Serial);
 
-int i = 0;
-
-int ledstatus = HIGH;
 unsigned long previousMillis = 0;
 const long interval = 1000;
 
 void setup() {
-  // put your setup code here, to run once:
   Serial.begin(115200);
   s.begin();
+
+  // Attach the action #2 to the actionB function
   s.attach(2, actionB);
-  pinMode(13, OUTPUT);
 }
+
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  
-  if (Serial.available()) {
-    s.check_reception();
-  }
 
-  unsigned long currentMillis = millis();
+	if (Serial.available()) {
+		s.check_reception();
+	}
+
+	unsigned long currentMillis = millis();
 
 	if (currentMillis - previousMillis >= interval) {
-	  // save the last time you blinked the LED
-	  previousMillis = currentMillis;
+		previousMillis = currentMillis;
 
-
-	  //delay(500);
-	  if ( s.sendMessage( 2 , true , "i" , i) ) {
-		  s.getData( "i" , &i );
+		// Send a message with an integer
+		int an_integer = 10;
+		if ( s.sendMessage( 2 , true , "i" , an_integer) ) {
+			// Get back the ack and extract an integer
+			int another_integer;
+			s.getData( "i" , &another_integer );
 	  }
 	}
-  //byte id;
-  //s.lockMessageId( &id  );
-  //Serial.println(id);
-
-
 }
 
-void actionA (void) {
-  Serial.println("");
-  
-}
 
 void actionB (void) {
 
-  char z[20] = "";
+	// Extract the data of the incoming message
+	char a_string[20] = "";
+	int an_integer = 0;
+	s.getData("is" , &an_integer, &a_string, sizeof(a_string));
 
-  s.getData("is" , &i, &z, sizeof(z));
-
-  s.sendAck(s.getId() , "is", i, z);
+	// Send an ack, with values
+	int another_integer = 30;
+	char another_string[20] = "The response";
+	s.sendAck(s.getId() , "is", another_integer, another_string);
 
 }
 
