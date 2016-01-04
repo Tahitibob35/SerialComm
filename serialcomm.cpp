@@ -3,15 +3,10 @@
 #include "serialcomm.h"
 #include <stdarg.h>
 
-#include <SoftwareSerial.h>
-
-
-SoftwareSerial mySerial(10, 11); // RX, TX
 
 SerialComm::SerialComm(Stream & s): _serial(&s) {
   this->_intputIndex = 0;                  // Nombre d octets recus
   this->_actioncount = 0;                  // Nombre d actions definies
-  mySerial.begin(9600);
 }
 
 
@@ -164,16 +159,6 @@ bool SerialComm::_inputMessageValidateChecksum( void ) {
 
 	if ( this->_inputMessage[0] != checksum ) {
 		//this->serial->println("Invalid checksum");
-
-
-		mySerial.println("Invalid checksum !");
-		/*for ( int i=1 ; i < this->_intputIndex ; i++) {
-			mySerial.println(this->_inputMessage[i], HEX);
-		}*/
-
-
-
-
 		return false;                                           // Retour en erreur
 	}
 	//this->serial->println("V");
@@ -388,12 +373,15 @@ bool SerialComm::getData(const char * fmt , ... ) {
 		case 's' :
 			{
 				char * s = va_arg(args, char * );
+				int slen = va_arg( args , int );
+
 				char c = 0;
 				int j = 0;
 				do {
 					c = _inputMessage[readindex++];
 					s[j++] = c;
-				} while (c != 0);
+				} while ((c != 0) && (j < slen));
+				s[slen-1] = 0;
 				break;
 			}
 		default:

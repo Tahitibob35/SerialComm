@@ -7,6 +7,8 @@ SerialComm s(Serial);
 int i = 0;
 
 int ledstatus = HIGH;
+unsigned long previousMillis = 0;
+const long interval = 1000;
 
 void setup() {
   // put your setup code here, to run once:
@@ -23,12 +25,18 @@ void loop() {
     s.check_reception();
   }
 
+  /*unsigned long currentMillis = millis();
 
-  
-  //delay(500);
-  if ( s.sendMessage( 2 , true , "i" , i) ) {
-	  s.getData( "i" , &i );
-  }
+	if (currentMillis - previousMillis >= interval) {
+	  // save the last time you blinked the LED
+	  previousMillis = currentMillis;
+
+
+	  //delay(500);
+	  if ( s.sendMessage( 2 , true , "i" , i) ) {
+		  s.getData( "i" , &i );
+	  }
+	}*/
   //byte id;
   //s.lockMessageId( &id  );
   //Serial.println(id);
@@ -43,12 +51,12 @@ void actionA (void) {
 
 void actionB (void) {
 
-  //char z[30] = "";
-  //s.getData("is" , &i, &z);
+  char z[3] = "";
+  s.getData("is" , &i, &z, sizeof(z));
   
   //s.sendMessage(2, false, "i", 3);
 
-  s.sendAck(s.getId() , "i", i);
+  s.sendAck(s.getId() , "is", i, z);
 
 }
 
