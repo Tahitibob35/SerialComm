@@ -33,7 +33,8 @@ resp = ard.sendmessage(2, (i,), ack=False)
 
 ## 2 - Python -> Arduino, With ack
 
-Arduino receiver code
+### Arduino receiver code
+
 ```c
 SerialComm s(Serial);
 
@@ -49,7 +50,7 @@ void setup() {
 }
 ```
 
-Python sender script
+### Python sender script
 ```python
 i = 100
 resp = ard.sendmessage(2, (i,), ack=False)
