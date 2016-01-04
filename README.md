@@ -35,7 +35,7 @@ Python sender script
 arduino = SerialComm('/dev/ttyUSB0', baudrate=115200)
 pin = 9
 value = 120
-resp = arduino.sendmessage(2, (pin,value), ack=False)
+resp = arduino.sendmessage(2, (pin, value), ack=False)
 ```
 
 ## 2 - Python -> Arduino, with ack
