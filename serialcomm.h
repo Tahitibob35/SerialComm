@@ -6,6 +6,29 @@
 #ifndef SerialComm_h
 #define SerialComm_h
 
+
+/*
+  A serial channel is activated by creating an instance of the SerialComm class passing
+  a Stream object (hard or soft).
+
+  The methods are:
+    SerialComm - Class for sending and receiving messages.
+    attach( command , function )  - Attaches a function to a command.
+    check_reception() - Checks for incomings messages.
+    getId( ) - Returns the message id of the incoming message.
+               Used to return the ack to the current incoming message.
+    sendMessage( command , ack , datas ... ) - Send a message with the specified command and datas.
+                                               Set ack to true to received an ack.
+                                               Return true if an ack has been received.
+    sendAck( messageid , datas... ) - Send an ack with datas.
+    getData(const char * , ... ) - Extract data from incoming message or ack.
+                                   Return true if success
+
+    attach(pin, min, max  ) - Attaches to a pin setting min and max values in microseconds
+    default min is 544, max is 2400
+
+ */
+
 #include "Arduino.h"
 
 #define START  0x61    //a
@@ -39,7 +62,7 @@ class SerialComm
     void (*_actions[ACTIONSLEN])(void);   // Tableau des fonctions des actions
     int  _actioncount;                     // Nombre d actions definies
     byte _inputMessage[INPUTMSGLEN];      // Tableau receptionnant le message
-    byte _intputIndex;                    // Nombre de caracteres recus
+    byte _inputIndex;                    // Nombre de caracteres recus
 
     void _checkSum( byte * , byte );        // Calcul du checksum
     void _addCharInInputMessage( char  );          // Ajout du caractere recu au message

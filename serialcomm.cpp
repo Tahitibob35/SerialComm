@@ -5,20 +5,20 @@
 #include <stdarg.h>
 
 
-SerialComm::SerialComm(Stream & s): _serial(&s) {
-  this->_intputIndex = 0;                  // Nombre d octets recus
+SerialComm::SerialComm( Stream &s ): _serial( &s ) {
+  this->_inputIndex = 0;                  // Nombre d octets recus
   this->_actioncount = 0;                  // Nombre d actions definies
 }
 
 
-void SerialComm::begin(void) {
+void SerialComm::begin( void ) {
   return;  
 }
 
 /******************************************************
  lit les donnees du buffer serie
  *****************************************************/
-bool SerialComm::_read(void) {
+bool SerialComm::_read( void ) {
 	byte c;                                //Caractere recu
 
 	static bool esc = false;               // Caractere suivant special
@@ -34,32 +34,32 @@ bool SerialComm::_read(void) {
 	//mySerial.print(" ");
 
 	// Check for frame start
-	if (c == START) {                            //Debut d'un message, restauration des donnees
+	if ( c == START ) {                            //Debut d'un message, restauration des donnees
 	  //this->serial->println("START");
 	  receptionstarted = true;
-	  this->_intputIndex = 0;
+	  this->_inputIndex = 0;
 	  esc = false;
 	}
 	else {
-	  if (receptionstarted) {
-		if (c == END) {                          //Fin d'un message
+	  if ( receptionstarted ) {
+		if ( c == END ) {                          //Fin d'un message
 		  //Serial.println("END");
 		  receptionstarted = false;
 		  //mySerial.println("");
 		  return true;
 		}
 		else {
-		  if (c == ESC) {                        //Detection du caractere d echappement
+		  if ( c == ESC ) {                        //Detection du caractere d echappement
 			esc = true;
 		  }
 		  else {
-			if (esc == true) {             //Traitement du caractere echappe
-			  if (c == TSTART) c = START;        //Conversion du caractere echappe
-			  if (c == TEND) c = END;
-			  if (c == TESC) c = ESC;
+			if ( esc == true ) {             //Traitement du caractere echappe
+			  if ( c == TSTART ) c = START;        //Conversion du caractere echappe
+			  if ( c == TEND ) c = END;
+			  if ( c == TESC ) c = ESC;
 			  esc = false;
 			}
-			this->_addCharInInputMessage(c);            //Ajout d'octetconverti au message
+			this->_addCharInInputMessage( c );            //Ajout d'octetconverti au message
 		  }
 		}
 	  }
@@ -68,14 +68,14 @@ bool SerialComm::_read(void) {
 }
 
 
-void SerialComm::check_reception(void) {
+void SerialComm::check_reception( void ) {
   
-  while ( this->_serial->available() ) {
-    if ( this->_read() ) {
+  while ( this->_serial->available( ) ) {
+    if ( this->_read( ) ) {
 		if ( this->_inputMessageValidateChecksum( ) ) {
 			//Serial.println("Checksum OK");
-			this->_processMessage();
-			this->_intputIndex = 0;                 //Restauration des parametres par defaut
+			this->_processMessage( );
+			this->_inputIndex = 0;                 //Restauration des parametres par defaut
 		}
     }
   }
@@ -89,11 +89,11 @@ bool SerialComm::_waitAck( byte id ) {
 	unsigned long now = millis( );
 	while ( ( millis() - now ) < ACKTIMEOUT ) {
 		while ( this->_serial->available() ) {
-			if ( this->_read() ) {
+			if ( this->_read( ) ) {
 				if ( this->_inputMessageValidateChecksum( ) ) {
 					if ( this->_inputMessageGetAction( ) != 0 ) {    // Un message
-						this->_processMessage();
-						this->_intputIndex = 0;                      //Restauration des parametres par defaut
+						this->_processMessage( );
+						this->_inputIndex = 0;                      //Restauration des parametres par defaut
 					}
 					else {                                          // Un ack
 						if ( this->getId( ) == id ) {// Ack attendu
@@ -112,17 +112,17 @@ bool SerialComm::_waitAck( byte id ) {
  Ajout d'un caractere au message
  *****************************************************/
 void SerialComm::_addCharInInputMessage( char c ) {
-  if (this->_intputIndex < INPUTMSGLEN)
-    this->_inputMessage[this->_intputIndex++] = c;
+    if ( this->_inputIndex < INPUTMSGLEN )
+        this->_inputMessage[this->_inputIndex++] = c;
 }
 
 
 /******************************************************
  Calcul du checksum
  *****************************************************/
-void SerialComm::_checkSum( byte  * checksum , byte data) {
+void SerialComm::_checkSum( byte  *checksum , byte data ) {
 
-  * checksum =  * checksum ^ data;
+  *checksum ^= data;
   //this->serial->print("Local checksum : ");
   //this->serial->println(checksum, HEX);
   //return checksum;
@@ -134,12 +134,12 @@ void SerialComm::_checkSum( byte  * checksum , byte data) {
  *****************************************************/
 bool SerialComm::_processMessage( void ) {
 
-	for(int i=0; i < this->_actioncount; i++) {
+	for( int i=0 ; i < this->_actioncount ; i++ ) {
 		//Serial.print("Looking for an action... : ");
 		//Serial.println(this->_inputMessageGetAction( ));
-		if (this->_inputMessageGetAction( ) == this->_commands[i]) {
+		if ( this->_inputMessageGetAction( ) == this->_commands[i] ) {
 			//Serial.println("Action found !");
-			(*this->_actions[i])();
+			( *this->_actions[i] )( );
 			break;
 		}
 	}
@@ -158,7 +158,7 @@ bool SerialComm::_inputMessageValidateChecksum( void ) {
 	//this->serial->println(this->inputMessage[0], HEX);
 
 	byte checksum = 0;
-	for ( int i=1 ; i < this->_intputIndex ; i++) {
+	for ( int i=1 ; i < this->_inputIndex ; i++) {
 		this->_checkSum( &checksum , this->_inputMessage[i] );
 	}
 
@@ -181,8 +181,8 @@ byte SerialComm::_inputMessageGetAction( void ) {
 /******************************************************
  Ajout d une action
  *****************************************************/
-bool SerialComm::attach(int command, void (*ptrfonction)(void)) {
-	if (this->_actioncount < ACTIONSLEN) {
+bool SerialComm::attach( int command , void ( *ptrfonction )( void )) {
+	if ( this->_actioncount < ACTIONSLEN ) {
 		this->_actions[this->_actioncount] = ptrfonction;
 		this->_commands[this->_actioncount] = command;
 		this->_actioncount++;
@@ -204,28 +204,28 @@ int SerialComm::getId( void ) {
 /******************************************************
  Ecrit un octet en l echappant si necessaire
  *****************************************************/
-bool SerialComm::_safeWrite(byte octet) {
-  switch (octet) {
+bool SerialComm::_safeWrite( byte octet ) {
+  switch ( octet ) {
     case START:
-      this->_serial->write(ESC);
-      this->_serial->write(TSTART);
+      this->_serial->write( ESC );
+      this->_serial->write( TSTART );
       //mySerial.print(ESC, HEX);
       //mySerial.print(TSTART, HEX);
       break;
     case END:
-      this->_serial->write(ESC);
-      this->_serial->write(TEND);
+      this->_serial->write( ESC );
+      this->_serial->write( TEND );
       //mySerial.print(ESC, HEX);
       //mySerial.print(TEND, HEX);
       break;
     case ESC:
-      this->_serial->write(ESC);
-      this->_serial->write(TESC);
+      this->_serial->write( ESC );
+      this->_serial->write( TESC );
       //mySerial.print(ESC, HEX);
       //mySerial.print(TESC, HEX);
       break;
     default:
-      this->_serial->write(octet);
+      this->_serial->write( octet );
       //mySerial.print(octet, HEX);
       break;
   }      
@@ -242,22 +242,22 @@ Envoi le message
 bool SerialComm::sendMessage( byte action , bool ack , const char * fmt , ... ) {
 
 	va_list args;
-	va_start(args, fmt);
+	va_start( args , fmt );
 
-	if (!ack) {                                          // Pas d'accuse demande
+	if ( !ack ) {                                          // Pas d'accuse demande
 		return this->_sendMessage( action , 0 , fmt  , args );
 	}
 
 	byte id;
 
-	id = this->_getNewMessageId();
+	id = this->_getNewMessageId( );
 
-	if (!this->_sendMessage( action , id  , fmt  , args )) {
+	if ( !this->_sendMessage( action , id  , fmt  , args ) ) {
 		return false;                                    // erreur a l'envoi du message
 	}
 
 	// ajouter traitement de l ack
-    if (!this->_waitAck( id ))
+    if ( !this->_waitAck( id ) )
     	return false;
 
    return true;
@@ -276,16 +276,16 @@ int SerialComm::_getNewMessageId( void  ) {
 /******************************************************
 Envoi un message
 ******************************************************/
-bool SerialComm::_sendMessage( byte action , byte id , const char * fmt , va_list args) {
+bool SerialComm::_sendMessage( byte action , byte id , const char *fmt , va_list args ) {
 
 	byte checksum = 0;
-	const char * tmpfmt = fmt;
+	const char *tmpfmt = fmt;
 
 	this->_checkSum( &checksum , id );                       // Checksum de l'id
 	this->_checkSum( &checksum , action );                   // Checksum de l'action
 
 	va_list args2;
-    va_copy(args2,args);
+    va_copy( args2 , args );
 
 	while ( *fmt != '\0' ) {
 		if ( *fmt == 'i' ) {
@@ -294,7 +294,7 @@ bool SerialComm::_sendMessage( byte action , byte id , const char * fmt , va_lis
 			this->_checkSum( &checksum , i & 0xFF );
 		}
 		else if ( *fmt == 's' ) {
-			char * s = va_arg( args , char * );
+			char *s = va_arg( args , char * );
 			while ( *s != '\0' ) {
 				this->_checkSum( &checksum , *s );
 				s++;
@@ -303,24 +303,21 @@ bool SerialComm::_sendMessage( byte action , byte id , const char * fmt , va_lis
 		fmt++;
 	}
 
-	this->_serial->write(START);
+	this->_serial->write( START );
     //mySerial.print(START, HEX);
-	this->_safeWrite(checksum);
-	this->_safeWrite(id);
-	this->_safeWrite(action);
+	this->_safeWrite( checksum );
+	this->_safeWrite( id );
+	this->_safeWrite( action );
 
 	fmt = tmpfmt;
-
-
-
 	while ( *fmt != '\0' ) {
 		if ( *fmt == 'i' ) {
 			int i = va_arg( args2 , int );
-			this->_safeWrite(i >> 8);
-			this->_safeWrite(i & 0xFF);
+			this->_safeWrite( i >> 8 );
+			this->_safeWrite( i & 0xFF );
 		}
 		else if ( *fmt == 's' ) {
-			char * s = va_arg( args2 , char * );
+			char *s = va_arg( args2 , char * );
 			while ( *s != '\0' ) {
 				this->_safeWrite( *s );
 				s++;
@@ -330,9 +327,8 @@ bool SerialComm::_sendMessage( byte action , byte id , const char * fmt , va_lis
 		fmt++;
 	}
 
-	this->_serial->write(END);
+	this->_serial->write( END );
     //mySerial.print(END, HEX);
-
 
 	return true;
 }
@@ -341,10 +337,10 @@ bool SerialComm::_sendMessage( byte action , byte id , const char * fmt , va_lis
 /******************************************************
 Envoi un accuse avec des donnes
 ******************************************************/
-bool SerialComm::sendAck( byte id  , const char * fmt , ... ) {
+bool SerialComm::sendAck( byte id  , const char *fmt , ... ) {
 	va_list args;
-	va_start(args, fmt);
-	return this->_sendMessage( 0 , id , fmt  , args);
+	va_start( args , fmt );
+	return this->_sendMessage( 0 , id , fmt  , args );
 }
 
 
@@ -352,32 +348,32 @@ bool SerialComm::sendAck( byte id  , const char * fmt , ... ) {
 Envoi un accuse sans donnees
 ******************************************************/
 bool SerialComm::sendAck( byte id ) {
-	return this->_sendMessage( 0 , id , "", NULL);
+	return this->_sendMessage( 0 , id , "" , NULL );
 }
 
 
 /******************************************************
 Retourne les donnees d un message entrant
 ******************************************************/
-bool SerialComm::getData(const char * fmt , ... ) {
+bool SerialComm::getData( const char * fmt , ... ) {
 	va_list args;
-	va_start(args, fmt);
+	va_start( args, fmt );
 
 	int readindex = 3;
 
 	while (*fmt != '\0') {
-		if (readindex >= this->_intputIndex) return false;            // Verification de fin de message
-		switch (*fmt) {
+		if ( readindex >= this->_inputIndex ) return false;            // Verification de fin de message
+		switch ( *fmt ) {
 		case 'i' :
 			{
-				int * i = va_arg(args, int * );
-				*i = word(_inputMessage[readindex], _inputMessage[readindex + 1]); // Recompose l entier en lisant 2 octets
+				int * i = va_arg( args , int * );
+				*i = word( _inputMessage[readindex], _inputMessage[readindex + 1] ); // Recompose l entier en lisant 2 octets
 				readindex += 2;
 				break;
 			}
 		case 's' :
 			{
-				char * s = va_arg(args, char * );
+				char *s = va_arg( args, char * );
 				int slen = va_arg( args , int );
 
 				char c = 0;
@@ -385,7 +381,7 @@ bool SerialComm::getData(const char * fmt , ... ) {
 				do {
 					c = _inputMessage[readindex++];
 					s[j++] = c;
-				} while ((c != 0) && (j < slen));
+				} while ( ( c != 0 ) && ( j < slen ) );
 				s[slen-1] = 0;
 				break;
 			}
@@ -395,7 +391,7 @@ bool SerialComm::getData(const char * fmt , ... ) {
 		++fmt;
 	}
 
-	va_end(args);
+	va_end( args );
 
 	return true;
 }

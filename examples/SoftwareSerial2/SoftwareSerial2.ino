@@ -11,7 +11,7 @@ SoftwareSerial mySerial(10, 11);
 SerialComm s(mySerial);
 
 unsigned long previousMillis = 0;
-const long interval = 2000;
+const long interval = 1000;
 
 char myname[] = "nano2";
 
@@ -22,6 +22,7 @@ void setup() {
 
   // Attach the action #2 to the actionB function
   s.attach(2, actionB);
+  Serial.println("Ready to receive....");
 }
 
 
