@@ -26,7 +26,9 @@ void remoteAnalogWrite( void ) {
 }
 
 void setup() {
-  s.attach(2, remoteAnalogWrite);
+    ...
+    s.attach(2, remoteAnalogWrite);
+    ....
 }
 ```
 
@@ -86,7 +88,9 @@ void setup() {
 }
 ```
 
-```c
+
+### Arduino sender code
+
 SerialComm s(Serial);
 
 void loop() {
@@ -99,4 +103,67 @@ void loop() {
     ...
 }
 
+```
+
+# Samples
+
+## Sample1
+
+This sample communicates with the python script sample1.py (https://github.com/Tahitibob35/pySerialComm).
+
+## SoftwareSerial1 and SoftwareSerial2
+
+These samples communicate together using the SoftwareSerial library.
+
+# Quick documentation
+
+## Initialization
+
+```c
+SerialComm s(Serial);  // Use hardware serial port
+void setup() {
+    Serial.begin(9600);
+}
+```
+
+## Attach an action id to a callback function
+
+```c
+bool attach(int command, void (*ptrfonction)(void));
+```
+
+## Sending a message without values
+
+```c
+s.sendMessage( 2 , true);
+```
+
+## Sending a message with an integer
+
+```c
+s.sendMessage( 2 , true, "i", 5);
+```
+
+## Sending a message with two integer
+
+```c
+s.sendMessage( 2 , true, "ii", 5, 2000);
+```
+
+## Sending a message with a string
+
+```c
+s.sendMessage( 2 , true, "s", &a_string, sizeof(a_string));
+```
+
+## Sending a message with two strings
+
+```c
+s.sendMessage( 2 , true, "ss", &a_stringA, sizeof(a_stringA), &a_stringB, sizeof(a_stringB));
+```
+
+## Sending a message with an integer and a string
+
+```c
+s.sendMessage( 2 , true, "is", an_integer, &a_stringB, sizeof(a_stringB));
 ```
