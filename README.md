@@ -135,35 +135,118 @@ bool attach(int command, void (*ptrfonction)(void));
 ## Sending a message without values
 
 ```c
-s.sendMessage( 2 , true);
+s.sendMessage( 2 , false );
 ```
+
+The second argument indicates if an ack is awaited.
+The method returns true if an ck has been received.
 
 ## Sending a message with an integer
 
 ```c
-s.sendMessage( 2 , true, "i", 5);
+s.sendMessage( 2 , false, "i", 5 );
 ```
+
+"i" means for an integer.
 
 ## Sending a message with two integer
 
 ```c
-s.sendMessage( 2 , true, "ii", 5, 2000);
+s.sendMessage( 2 , false, "ii", 5, 2000 );
 ```
 
 ## Sending a message with a string
 
 ```c
-s.sendMessage( 2 , true, "s", &a_string, sizeof(a_string));
+s.sendMessage( 2 , false, "s", a_string );
 ```
+"s" means for an string.
 
 ## Sending a message with two strings
 
 ```c
-s.sendMessage( 2 , true, "ss", &a_stringA, sizeof(a_stringA), &a_stringB, sizeof(a_stringB));
+s.sendMessage( 2 , false, "ss", a_stringA, a_stringB );
 ```
 
 ## Sending a message with an integer and a string
 
 ```c
-s.sendMessage( 2 , true, "is", an_integer, &a_stringB, sizeof(a_stringB));
+s.sendMessage( 2 , false, "is", an_integer,  a_string );
 ```
+
+## Sending a message with three integers and three string
+
+```c
+s.sendMessage( 2 , false, "iiisss", an_integerA, an_integerB, an_integerC, a_stringA, a_stringB, a_stringC );
+```
+
+## Check for incoming messages (in loop)
+
+```c
+if (mySerial.available()) {
+    s.check_reception();
+}
+```
+
+## Extract an integer from an incoming message
+
+```c
+s.getData( "i" , &an_integer );
+```
+
+This method can be used in the callback function of after sending a message if an ack has been specified.
+
+## Extract two integers from an incoming message
+
+```c
+s.getData( "ii" , &an_integerA, &an_integerB );
+```
+
+## Extract a string from an incoming message
+
+```c
+s.getData( "s" , &a_string, sizeof(a_string) );
+```
+
+## Extract a string from an incoming message
+
+```c
+s.getData( "ss" , &a_stringA, sizeof(a_stringA) , &a_stringB, sizeof(a_stringB) );
+```
+
+## Extract a string and an integer from an incoming message
+
+```c
+s.getData( "si" , &a_string, sizeof(a_string), &an_integer );
+```
+
+## Extract a string, an integer, a string and an integer from an incoming message
+
+```c
+s.getData( "sisi" , &a_stringA, sizeof(a_stringA), &an_integerA , &a_stringB, sizeof(a_stringB), &an_integerB );
+```
+
+## Send an ack without data
+
+```c
+s.sendAck(s.getId());
+```
+
+## Send an ack with an integer
+
+```c
+s.sendAck(s.getId(), "i", 5);
+```
+
+## Send an ack with a string
+
+```c
+s.sendAck(s.getId(), "s", a_string);
+```
+## Send an ack with a string and an integer
+
+```c
+s.sendAck(s.getId(), "ss", a_string, an_integer);
+```
+
+
