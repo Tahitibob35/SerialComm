@@ -1,3 +1,8 @@
+/************************************************************
+ * Sample code with SoftwareSerial library.
+ *
+ ***********************************************************/
+
 #include <SoftwareSerial.h>
 #include "serialcomm.h"
 
@@ -6,7 +11,7 @@ SoftwareSerial mySerial(10, 11);
 SerialComm s(mySerial);
 
 unsigned long previousMillis = 0;
-const long interval = 50;
+const long interval = 2000;
 
 char myname[] = "nano1";
 
@@ -31,11 +36,13 @@ void loop() {
 
 	if (currentMillis - previousMillis >= interval) {
 		previousMillis = currentMillis;
-
-		if ( s.sendMessage( 2 , false , "s" , myname) ) {
-			// Get back the ack and extract an integer
-			//int another_integer;
-			//s.getData( "i" , &another_integer );
+		if ( s.sendMessage( 2 , true , "s" , myname) ) {
+			char a_string[20] = "";
+			s.getData( "s" , &a_string, sizeof(a_string));
+			Serial.print("I'm ");
+			Serial.print(myname);
+			Serial.print(" and I sent a message to ");
+			Serial.println(a_string);
 	  }
 	}
 }
@@ -51,6 +58,8 @@ void actionB (void) {
 	Serial.print(myname);
 	Serial.print(" and I received a message from ");
 	Serial.println(a_string);
+
+	s.sendAck(s.getId() , "s", myname);
 
 }
 
