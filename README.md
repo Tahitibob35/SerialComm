@@ -88,9 +88,9 @@ void setup() {
 }
 ```
 
-
 ### Arduino sender code
 
+```c
 SerialComm s(Serial);
 
 void loop() {
@@ -231,6 +231,8 @@ s.getData( "sisi" , &a_stringA, sizeof(a_stringA), &an_integerA , &a_stringB, si
 ```c
 s.sendAck(s.getId());
 ```
+
+This method is used in the callback function.
 
 ## Send an ack with an integer
 
