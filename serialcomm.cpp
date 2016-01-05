@@ -25,6 +25,7 @@ bool SerialComm::_read(void) {
 	static bool receptionstarted = false;
 
 	c = this->_serial->read();
+	//Serial.println(c);
 	//this->serial->print("Byte received (hex): ");
 	//this->serial->println(c, HEX);
 	//this->serial->print(",");
@@ -42,10 +43,10 @@ bool SerialComm::_read(void) {
 	else {
 	  if (receptionstarted) {
 		if (c == END) {                          //Fin d'un message
-		  //this->serial->println("END");
+		  //Serial.println("END");
 		  receptionstarted = false;
 		  //mySerial.println("");
-		  return true;;
+		  return true;
 		}
 		else {
 		  if (c == ESC) {                        //Detection du caractere d echappement
@@ -72,7 +73,7 @@ void SerialComm::check_reception(void) {
   while ( this->_serial->available() ) {
     if ( this->_read() ) {
 		if ( this->_inputMessageValidateChecksum( ) ) {
-			//this->serial->print("Z");
+			//Serial.println("Checksum OK");
 			this->_processMessage();
 			this->_intputIndex = 0;                 //Restauration des parametres par defaut
 		}
@@ -134,7 +135,10 @@ void SerialComm::_checkSum( byte  * checksum , byte data) {
 bool SerialComm::_processMessage( void ) {
 
 	for(int i=0; i < this->_actioncount; i++) {
+		//Serial.print("Looking for an action... : ");
+		//Serial.println(this->_inputMessageGetAction( ));
 		if (this->_inputMessageGetAction( ) == this->_commands[i]) {
+			//Serial.println("Action found !");
 			(*this->_actions[i])();
 			break;
 		}
@@ -277,8 +281,8 @@ bool SerialComm::_sendMessage( byte action , byte id , const char * fmt , va_lis
 	byte checksum = 0;
 	const char * tmpfmt = fmt;
 
-	this->_checkSum( &checksum , action );                   // Checksum de l'action
 	this->_checkSum( &checksum , id );                       // Checksum de l'id
+	this->_checkSum( &checksum , action );                   // Checksum de l'action
 
 	va_list args2;
     va_copy(args2,args);
@@ -302,8 +306,8 @@ bool SerialComm::_sendMessage( byte action , byte id , const char * fmt , va_lis
 	this->_serial->write(START);
     //mySerial.print(START, HEX);
 	this->_safeWrite(checksum);
-	this->_safeWrite(action);
 	this->_safeWrite(id);
+	this->_safeWrite(action);
 
 	fmt = tmpfmt;
 
