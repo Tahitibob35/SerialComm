@@ -58,6 +58,7 @@ void setup() {
 ```
 
 ### Python sender script
+
 ```python
 arduino = SerialComm('/dev/ttyUSB0', baudrate=115200)
 pin = 5
@@ -66,4 +67,36 @@ values = arduino.parsedata("i", resp)
 pin_value = values[0]
 ```
 
+## 3 - Arduino -> Arduino, with ack
 
+### Arduino receiver code
+
+```c
+SerialComm s(Serial);
+char myname[] = "Arduino receiver";
+
+void sendMyName( void ) {
+    s.sendAck(s.getId() , "s", myname);
+}
+
+void setup() {
+    ...
+    s.attach(2, sendMyName);
+    ...
+}
+```
+
+```c
+SerialComm s(Serial);
+
+void loop() {
+    ...
+    s.sendMessage( 2 , true) ) {
+    char a_string[20] = "";
+    if ( s.sendMessage( 2 , true) ) {
+    char a_string[20] = "";
+    s.getData( "s" , &a_string, sizeof(a_string));
+    ...
+}
+
+```
