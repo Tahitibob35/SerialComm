@@ -94,8 +94,8 @@ void loop() {
     s.sendMessage( 2 , true) ) {
     char a_string[20] = "";
     if ( s.sendMessage( 2 , true) ) {
-    char a_string[20] = "";
-    s.getData( "s" , &a_string, sizeof(a_string));
+        s.getData( "s" , &a_string, sizeof(a_string));
+    }
     ...
 }
 
