@@ -6,7 +6,7 @@
 #include <SoftwareSerial.h>
 #include "serialcomm.h"
 
-SoftwareSerial mySerial(10, 11);
+SoftwareSerial mySerial( 10 , 11 );
 
 SerialComm s(mySerial);
 
@@ -16,50 +16,49 @@ const long interval = 2000;
 char myname[] = "nano1";
 
 void setup() {
-  Serial.begin(9600);
-  mySerial.begin(9600);
-  s.begin();
+  Serial.begin( 9600 );
+  mySerial.begin( 9600 );
 
   // Attach the action #2 to the actionB function
-  s.attach(2, actionB);
-  Serial.println("Ready to receive....");
+  s.attach( 2, actionB );
+  Serial.println( "Ready to receive...." );
 }
 
 
-void loop() {
+void loop( ) {
 
-	if (mySerial.available()) {
-		s.check_reception();
+	if ( mySerial.available( ) ) {
+		s.check_reception( );
 	}
 
 	unsigned long currentMillis = millis();
 
-	if (currentMillis - previousMillis >= interval) {
+	if ( currentMillis - previousMillis >= interval ) {
 		previousMillis = currentMillis;
 		if ( s.sendMessage( 2 , true , "s" , myname) ) {
 			char a_string[20] = "";
-			s.getData( "s" , &a_string, sizeof(a_string));
-			Serial.print("I'm ");
-			Serial.print(myname);
-			Serial.print(" and I sent a message to ");
-			Serial.println(a_string);
+			s.getData( "s" , &a_string , sizeof( a_string ) );
+			Serial.print( "I'm " );
+			Serial.print( myname );
+			Serial.print( " and I sent a message to " );
+			Serial.println( a_string );
 	  }
 	}
 }
 
 
-void actionB (void) {
+void actionB ( void ) {
 
 	// Extract the data of the incoming message
 	char a_string[20] = "";
-	s.getData("s", &a_string, sizeof(a_string));
+	s.getData( "s" , &a_string , sizeof( a_string ) );
 
-	Serial.print("I'm ");
-	Serial.print(myname);
-	Serial.print(" and I received a message from ");
-	Serial.println(a_string);
+	Serial.print( "I'm " );
+	Serial.print( myname );
+	Serial.print( " and I received a message from " );
+	Serial.println( a_string );
 
-	s.sendAck(s.getId() , "s", myname);
+	s.sendAck(  "s" , myname );
 
 }
 

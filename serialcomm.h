@@ -17,10 +17,10 @@
     check_reception() - Checks for incomings messages.
     getId( ) - Returns the message id of the incoming message.
                Used to return the ack to the current incoming message.
-    sendMessage( command , ack , datas ... ) - Send a message with the specified command and datas.
-                                               Set ack to true to received an ack.
-                                               Return true if an ack has been received.
-    sendAck( messageid , datas... ) - Send an ack with datas.
+    sendMessage( command , ack , values ... ) - Send a message with the specified command and values.
+                                                Set ack to true to received an ack.
+                                                Return true if an ack has been received.
+    sendAck( values... ) - Send an ack with values.
     getData(const char * , ... ) - Extract data from incoming message or ack.
                                    Return true if success
 
@@ -46,13 +46,11 @@ class SerialComm
 {
   public:
     SerialComm(Stream &s);
-    void begin(void);
     void check_reception(void);
     bool attach(int command, void (*ptrfonction)(void));
-    int  getId( void );                                     // retourne l id d un message
     bool sendMessage( byte , bool , const char * , ... );   // Envoi un message
-    bool sendAck( byte , const char * , ... );              // Envoi un accuse avec des donnees
-    bool sendAck( byte id );                                // Envoi un accuse sans donnees
+    bool sendAck( const char * , ... );              // Envoi un accuse avec des donnees
+    bool sendAck( void );                                // Envoi un accuse sans donnees
 	bool getData(const char * , ... );                      // Retourne les donnees d un message entrant
 
      
@@ -72,6 +70,7 @@ class SerialComm
     bool _sendMessage( byte , byte );             // Envoi le message avec id
     bool _read( void );                           // lit les donnees du buffer serie
     byte _inputMessageGetAction( void );           // Retourne l'action du message entrant
+    int  _inputMessageGetId( void );                                     // retourne l id d un message
     bool _inputMessageValidateChecksum( void );    // Verifie le checksum du message entrant
     bool _sendMessage( byte , byte , const char* , va_list);  // Envoi un message
     int  _getNewMessageId( void );                       // Retourne un nouvel id de message

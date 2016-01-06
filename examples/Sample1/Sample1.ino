@@ -6,24 +6,23 @@ SerialComm s(Serial);
 unsigned long previousMillis = 0;
 const long interval = 1000;
 
-void setup() {
-  Serial.begin(115200);
-  s.begin();
+void setup( ) {
+  Serial.begin( 115200 );
 
   // Attach the action #2 to the actionB function
-  s.attach(2, actionB);
+  s.attach( 2 , actionB );
 }
 
 
-void loop() {
+void loop( ) {
 
-	if (Serial.available()) {
-		s.check_reception();
+	if ( Serial.available( ) ) {
+		s.check_reception( );
 	}
 
 	unsigned long currentMillis = millis();
 
-	if (currentMillis - previousMillis >= interval) {
+	if ( currentMillis - previousMillis >= interval ) {
 		previousMillis = currentMillis;
 
 		// Send a message with an integer
@@ -37,17 +36,17 @@ void loop() {
 }
 
 
-void actionB (void) {
+void actionB ( void ) {
 
 	// Extract the data of the incoming message
 	char a_string[20] = "";
 	int an_integer = 0;
-	s.getData("is" , &an_integer, &a_string, sizeof(a_string));
+	s.getData( "is" , &an_integer , &a_string , sizeof( a_string ) );
 
 	// Send an ack, with values
 	int another_integer = 30;
 	char another_string[20] = "The response";
-	s.sendAck(s.getId() , "is", another_integer, another_string);
+	s.sendAck( "is" , another_integer , another_string );
 
 }
 

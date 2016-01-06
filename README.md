@@ -16,18 +16,18 @@ This arduino library simplifies serial communications between arduinos, or betwe
 
 Arduino receiver code
 ```c
-SerialComm s(Serial);
+SerialComm s( Serial );
 
 void remoteAnalogWrite( void ) {
     int pin = 0;
     int value = 0;
-    s.getData("ii", &pin, &value);
-    analogWrite(pin, value);
+    s.getData( "ii" , &pin , &value );
+    analogWrite( pin , value );
 }
 
-void setup() {
+void setup( ) {
     ...
-    s.attach(2, remoteAnalogWrite);
+    s.attach( 2 , remoteAnalogWrite );
     ....
 }
 ```
@@ -45,17 +45,17 @@ resp = arduino.sendmessage(2, (pin, value), ack=False)
 ### Arduino receiver code
 
 ```c
-SerialComm s(Serial);
+SerialComm s ( Serial );
 
 void remoteAnalogRead( void ) {
     int pin;
-    s.getData("i", &pin);
-    int value = analogRead(pin);
-    s.sendAck(s.getId() , "i", value);
+    s.getData( "i" , &pin );
+    int value = analogRead( pin );
+    s.sendAck( "i" , value );
 }
 
-void setup() {
-  s.attach(2, remoteAnalogRead);
+void setup( ) {
+  s.attach( 2 , remoteAnalogRead );
 }
 ```
 
@@ -74,16 +74,16 @@ pin_value = values[0]
 ### Arduino receiver code
 
 ```c
-SerialComm s(Serial);
+SerialComm s ( Serial );
 char myname[] = "Arduino receiver";
 
 void sendMyName( void ) {
-    s.sendAck(s.getId() , "s", myname);
+    s.sendAck( "s" , myname );
 }
 
-void setup() {
+void setup( ) {
     ...
-    s.attach(2, sendMyName);
+    s.attach( 2, sendMyName );
     ...
 }
 ```
@@ -91,14 +91,14 @@ void setup() {
 ### Arduino sender code
 
 ```c
-SerialComm s(Serial);
+SerialComm s ( Serial );
 
-void loop() {
+void loop( ) {
     ...
-    s.sendMessage( 2 , true) ) {
+    s.sendMessage( 2 , true ) ) {
     char a_string[20] = "";
-    if ( s.sendMessage( 2 , true) ) {
-        s.getData( "s" , &a_string, sizeof(a_string));
+    if ( s.sendMessage( 2 , true ) ) {
+        s.getData( "s" , &a_string , sizeof( a_string ) );
     }
     ...
 }
@@ -121,9 +121,6 @@ These samples communicate together using the SoftwareSerial library.
 
 ```c
 SerialComm s(Serial);  // Use hardware serial port
-void setup() {
-    Serial.begin(9600);
-}
 ```
 
 ## Attach an action id to a callback function
@@ -229,7 +226,7 @@ s.getData( "sisi" , &a_stringA, sizeof(a_stringA), &an_integerA , &a_stringB, si
 ## Send an ack without data
 
 ```c
-s.sendAck(s.getId());
+s.sendAck( );
 ```
 
 This method is used in the callback function.
@@ -237,18 +234,18 @@ This method is used in the callback function.
 ## Send an ack with an integer
 
 ```c
-s.sendAck(s.getId(), "i", 5);
+s.sendAck( "i" , 5 );
 ```
 
 ## Send an ack with a string
 
 ```c
-s.sendAck(s.getId(), "s", a_string);
+s.sendAck( "s" , a_string );
 ```
 ## Send an ack with a string and an integer
 
 ```c
-s.sendAck(s.getId(), "ss", a_string, an_integer);
+s.sendAck( "ss" , a_string , an_integer );
 ```
 
 

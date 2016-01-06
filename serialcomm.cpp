@@ -11,10 +11,6 @@ SerialComm::SerialComm( Stream &s ): _serial( &s ) {
 }
 
 
-void SerialComm::begin( void ) {
-  return;  
-}
-
 /******************************************************
  lit les donnees du buffer serie
  *****************************************************/
@@ -96,7 +92,7 @@ bool SerialComm::_waitAck( byte id ) {
 						this->_inputIndex = 0;                      //Restauration des parametres par defaut
 					}
 					else {                                          // Un ack
-						if ( this->getId( ) == id ) {// Ack attendu
+						if ( this->_inputMessageGetId( ) == id ) {// Ack attendu
 							return true;
 						}
 					}
@@ -196,7 +192,7 @@ bool SerialComm::attach( int command , void ( *ptrfonction )( void )) {
 /******************************************************
  Retourne l id du message
  *****************************************************/
-int SerialComm::getId( void ) {  
+int SerialComm::_inputMessageGetId( void ) {
   return _inputMessage[1];
 }
 
@@ -337,18 +333,18 @@ bool SerialComm::_sendMessage( byte action , byte id , const char *fmt , va_list
 /******************************************************
 Envoi un accuse avec des donnes
 ******************************************************/
-bool SerialComm::sendAck( byte id  , const char *fmt , ... ) {
+bool SerialComm::sendAck( const char *fmt , ... ) {
 	va_list args;
 	va_start( args , fmt );
-	return this->_sendMessage( 0 , id , fmt  , args );
+	return this->_sendMessage( 0 , this->_inputMessageGetId( ) , fmt  , args );
 }
 
 
 /******************************************************
 Envoi un accuse sans donnees
 ******************************************************/
-bool SerialComm::sendAck( byte id ) {
-	return this->_sendMessage( 0 , id , "" , NULL );
+bool SerialComm::sendAck( void ) {
+	return this->_sendMessage( 0 , this->_inputMessageGetId( ) , "" , NULL );
 }
 
 
