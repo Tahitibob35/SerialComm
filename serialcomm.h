@@ -23,10 +23,6 @@
     sendAck( values... ) - Send an ack with values.
     getData(const char * , ... ) - Extract data from incoming message or ack.
                                    Return true if success
-
-    attach(pin, min, max  ) - Attaches to a pin setting min and max values in microseconds
-    default min is 544, max is 2400
-
  */
 
 #include "Arduino.h"
