@@ -344,7 +344,8 @@ bool SerialComm::sendAck( const char *fmt , ... ) {
 Envoi un accuse sans donnees
 ******************************************************/
 bool SerialComm::sendAck( void ) {
-	return this->_sendMessage( 0 , this->_inputMessageGetId( ) , "" , NULL );
+	return this->sendAck( 0 , this->_inputMessageGetId( ) , "" , 0 );
+
 }
 
 
