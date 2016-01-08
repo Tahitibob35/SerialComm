@@ -30,6 +30,12 @@ void setup( ) {
     s.attach( 2 , remoteAnalogWrite );
     ....
 }
+
+void loop() {
+    if (Serial.available()) {
+        s.check_reception();
+    }
+}
 ```
 
 Python sender script
@@ -56,6 +62,12 @@ void remoteAnalogRead( void ) {
 
 void setup( ) {
   s.attach( 2 , remoteAnalogRead );
+}
+
+void loop() {
+    if (Serial.available()) {
+        s.check_reception();
+    }
 }
 ```
 
@@ -86,6 +98,13 @@ void setup( ) {
     s.attach( 2, sendMyName );
     ...
 }
+
+void loop() {
+    if (Serial.available()) {
+        s.check_reception();
+    }
+}
+
 ```
 
 ### Arduino sender code
