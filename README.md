@@ -32,9 +32,7 @@ void setup( ) {
 }
 
 void loop() {
-    if (Serial.available()) {
-        s.check_reception();
-    }
+    s.check_reception();
 }
 ```
 
@@ -65,9 +63,7 @@ void setup( ) {
 }
 
 void loop() {
-    if (Serial.available()) {
-        s.check_reception();
-    }
+    s.check_reception();
 }
 ```
 
@@ -100,9 +96,7 @@ void setup( ) {
 }
 
 void loop() {
-    if (Serial.available()) {
-        s.check_reception();
-    }
+    s.check_reception();
 }
 
 ```
