@@ -34,16 +34,18 @@
 #define TEND   0x65    //e
 #define TESC   0x66    //f
 
-#define INPUTMSGLEN 50        //Taille max d'un message entrant
-#define ACTIONSLEN 5          //nombre max d actions
+#define INPUTMSGLEN 100        //Taille max d'un message entrant
+#define ACTIONSLEN 20          //nombre max d actions
 #define ACKTIMEOUT 2000
 
 class SerialComm
 {
   public:
-    SerialComm(Stream &s);
+    SerialComm( Stream &s );
+    SerialComm( void );
     void check_reception(void);
     bool attach(int command, void (*ptrfonction)(void));
+    bool sendMessage( byte , bool );   // Envoi un message
     bool sendMessage( byte , bool , const char * , ... );   // Envoi un message
     bool sendAck( const char * , ... );              // Envoi un accuse avec des donnees
     bool sendAck( void );                                // Envoi un accuse sans donnees
