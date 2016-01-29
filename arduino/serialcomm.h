@@ -45,7 +45,7 @@ class SerialComm
   public:
     SerialComm( Stream &s );
     SerialComm( void );
-	SoftwareSerial *debugserial;
+	//SoftwareSerial *debugserial;
     void check_reception(void);
     bool attach(int command, void (*ptrfonction)(void));
     bool sendMessage( byte , bool );   // Envoi un message

@@ -27,8 +27,8 @@ bool SerialComm::_read( void ) {
 
 	c = this->_serial->read();
 	//Serial.println(c);
-	this->debugserial->print("Byte received (hex): ");
-	this->debugserial->println(c, HEX);
+	//this->debugserial->print("Byte received (hex): ");
+	//this->debugserial->println(c, HEX);
 	//this->serial->print(",");
 	//this->serial->println(c, DEC);
 	//mySerial.print(c, HEX);
@@ -44,7 +44,7 @@ bool SerialComm::_read( void ) {
 	else {
 	  if ( receptionstarted ) {
 		if ( c == END ) {                          //Fin d'un message
-		    this->debugserial->print("END");
+		    //this->debugserial->print("END");
 		    receptionstarted = false;
 		    //mySerial.println("");
 		    return true;
@@ -74,12 +74,12 @@ void SerialComm::check_reception( void ) {
   while ( this->_serial->available( ) ) {
     if ( this->_read( ) ) {
 		if ( this->_inputMessageValidateChecksum( ) ) {
-		    this->debugserial->print("CRC OK");
+		    //this->debugserial->print("CRC OK");
 			this->_processMessage( );
 			this->_inputIndex = 0;                 //Restauration des parametres par defaut
 		}
 		else {
-			this->debugserial->print("Bad CRC");
+			//this->debugserial->print("Bad CRC");
 		}
     }
   }
