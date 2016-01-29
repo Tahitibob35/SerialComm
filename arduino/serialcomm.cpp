@@ -13,7 +13,7 @@ SerialComm::SerialComm( Stream &s ): _serial( &s ) {
 SerialComm::SerialComm( void ) {
   this->_inputIndex = 0;                  // Nombre d octets recus
   this->_actioncount = 0;                  // Nombre d actions definies
-  _serial == NULL;
+  this->_serial = NULL;
 }
 
 /******************************************************
@@ -27,8 +27,8 @@ bool SerialComm::_read( void ) {
 
 	c = this->_serial->read();
 	//Serial.println(c);
-	//this->serial->print("Byte received (hex): ");
-	//this->serial->println(c, HEX);
+	this->debugserial->print("Byte received (hex): ");
+	this->debugserial->println(c, HEX);
 	//this->serial->print(",");
 	//this->serial->println(c, DEC);
 	//mySerial.print(c, HEX);
@@ -44,10 +44,10 @@ bool SerialComm::_read( void ) {
 	else {
 	  if ( receptionstarted ) {
 		if ( c == END ) {                          //Fin d'un message
-		  //Serial.println("END");
-		  receptionstarted = false;
-		  //mySerial.println("");
-		  return true;
+		    this->debugserial->print("END");
+		    receptionstarted = false;
+		    //mySerial.println("");
+		    return true;
 		}
 		else {
 		  if ( c == ESC ) {                        //Detection du caractere d echappement
@@ -74,9 +74,12 @@ void SerialComm::check_reception( void ) {
   while ( this->_serial->available( ) ) {
     if ( this->_read( ) ) {
 		if ( this->_inputMessageValidateChecksum( ) ) {
-			//Serial.println("Checksum OK");
+		    this->debugserial->print("CRC OK");
 			this->_processMessage( );
 			this->_inputIndex = 0;                 //Restauration des parametres par defaut
+		}
+		else {
+			this->debugserial->print("Bad CRC");
 		}
     }
   }
@@ -159,11 +162,11 @@ bool SerialComm::_inputMessageValidateChecksum( void ) {
 	//this->serial->println(this->inputMessage[0], HEX);
 
 	byte checksum = 0;
-	for ( int i=1 ; i < this->_inputIndex ; i++) {
+	for ( int i=0 ; i < ( this->_inputIndex - 1 ) ; i++) {
 		this->_checkSum( &checksum , this->_inputMessage[i] );
 	}
 
-	if ( this->_inputMessage[0] != checksum ) {
+	if ( this->_inputMessage[this->_inputIndex - 1] != checksum ) {
 		//this->serial->println("Invalid checksum");
 		return false;                                           // Retour en erreur
 	}
@@ -176,7 +179,7 @@ bool SerialComm::_inputMessageValidateChecksum( void ) {
  Retourne l'action d'un message entrant
  *****************************************************/
 byte SerialComm::_inputMessageGetAction( void ) {
-	return this->_inputMessage[2];
+	return this->_inputMessage[1];
 }
 
 /******************************************************
@@ -198,7 +201,7 @@ bool SerialComm::attach( int command , void ( *ptrfonction )( void )) {
  Retourne l id du message
  *****************************************************/
 int SerialComm::_inputMessageGetId( void ) {
-  return _inputMessage[1];
+  return _inputMessage[0];
 }
 
 
@@ -315,7 +318,7 @@ bool SerialComm::_sendMessage( byte action , byte id , const char *fmt , va_list
 
 	this->_serial->write( START );
     //mySerial.print(START, HEX);
-	this->_safeWrite( checksum );
+	this->_safeWrite( 0 );
 	this->_safeWrite( id );
 	this->_safeWrite( action );
 
@@ -336,6 +339,8 @@ bool SerialComm::_sendMessage( byte action , byte id , const char *fmt , va_list
 		}
 		fmt++;
 	}
+
+	this->_safeWrite( checksum );
 
 	this->_serial->write( END );
     //mySerial.print(END, HEX);
@@ -370,10 +375,10 @@ bool SerialComm::getData( const char * fmt , ... ) {
 	va_list args;
 	va_start( args, fmt );
 
-	int readindex = 3;
+	int readindex = 2;
 
 	while (*fmt != '\0') {
-		if ( readindex >= this->_inputIndex ) return false;            // Verification de fin de message
+		if ( readindex >= ( this->_inputIndex - 1 ) ) return false;            // Verification de fin de message
 		switch ( *fmt ) {
 		case 'i' :
 			{

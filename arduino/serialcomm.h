@@ -6,6 +6,8 @@
 #ifndef SerialComm_h
 #define SerialComm_h
 
+#include <SoftwareSerial.h>
+
 
 /*
   A serial channel is activated by creating an instance of the SerialComm class passing
@@ -43,6 +45,7 @@ class SerialComm
   public:
     SerialComm( Stream &s );
     SerialComm( void );
+	SoftwareSerial *debugserial;
     void check_reception(void);
     bool attach(int command, void (*ptrfonction)(void));
     bool sendMessage( byte , bool );   // Envoi un message
