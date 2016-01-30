@@ -1,13 +1,31 @@
-
-
 #include "Arduino.h"
 #include "serialcomm.h"
 #include <stdarg.h>
 
+#define SCDEBUG
+
+#ifdef SCDEBUG
+#define debug( X ) this->debugserial->print( X )
+#define debugln( X , ... ) this->debugserial->println( X )
+//#define debugln( X , Y ) this->debugserial->println( X , Y )
+#include <SoftwareSerial.h>
+#else
+#define debug( X , ... )
+#define debugln( X , ... )
+#endif
+
+#include <SoftwareSerial.h>
+
 
 SerialComm::SerialComm( Stream &s ): _serial( &s ) {
-  this->_inputIndex = 0;                  // Nombre d octets recus
-  this->_actioncount = 0;                  // Nombre d actions definies
+    this->_inputIndex = 0;                   // Nombre d octets recus
+    this->_actioncount = 0;                  // Nombre d actions definies
+    this->_checksum = 0;
+#ifdef SCDEBUG
+    this->debugserial = new SoftwareSerial( 10 , 11 );
+    this->debugserial->begin( 9600 );
+    debugln( "Debug enabled" );
+#endif
 }
 
 SerialComm::SerialComm( void ) {
@@ -27,8 +45,8 @@ bool SerialComm::_read( void ) {
 
 	c = this->_serial->read();
 	//Serial.println(c);
-	//this->debugserial->print("Byte received (hex): ");
-	//this->debugserial->println(c, HEX);
+	debug("<-Byte received (hex): ");
+	debugln(c, HEX);
 	//this->serial->print(",");
 	//this->serial->println(c, DEC);
 	//mySerial.print(c, HEX);
@@ -36,7 +54,7 @@ bool SerialComm::_read( void ) {
 
 	// Check for frame start
 	if ( c == START ) {                            //Debut d'un message, restauration des donnees
-	  //this->serial->println("START");
+	  debugln("<-START");
 	  receptionstarted = true;
 	  this->_inputIndex = 0;
 	  esc = false;
@@ -44,7 +62,7 @@ bool SerialComm::_read( void ) {
 	else {
 	  if ( receptionstarted ) {
 		if ( c == END ) {                          //Fin d'un message
-		    //this->debugserial->print("END");
+		    debugln("<-END");
 		    receptionstarted = false;
 		    //mySerial.println("");
 		    return true;
@@ -60,7 +78,7 @@ bool SerialComm::_read( void ) {
 			  if ( c == TESC ) c = ESC;
 			  esc = false;
 			}
-			this->_addCharInInputMessage( c );            //Ajout d'octetconverti au message
+			this->_addCharInInputMessage( c );            //Ajout d'octet converti au message
 		  }
 		}
 	  }
@@ -74,12 +92,12 @@ void SerialComm::check_reception( void ) {
   while ( this->_serial->available( ) ) {
     if ( this->_read( ) ) {
 		if ( this->_inputMessageValidateChecksum( ) ) {
-		    //this->debugserial->print("CRC OK");
+		    debugln( "CRC OK" );
 			this->_processMessage( );
 			this->_inputIndex = 0;                 //Restauration des parametres par defaut
 		}
 		else {
-			//this->debugserial->print("Bad CRC");
+			debug( "Bad CRC" );
 		}
     }
   }
@@ -90,24 +108,29 @@ void SerialComm::check_reception( void ) {
  *****************************************************/
 bool SerialComm::_waitAck( byte id ) {
 
-	unsigned long now = millis( );
-	while ( ( millis() - now ) < ACKTIMEOUT ) {
-		while ( this->_serial->available() ) {
-			if ( this->_read( ) ) {
-				if ( this->_inputMessageValidateChecksum( ) ) {
-					if ( this->_inputMessageGetAction( ) != 0 ) {    // Un message
-						this->_processMessage( );
-						this->_inputIndex = 0;                      //Restauration des parametres par defaut
-					}
-					else {                                          // Un ack
-						if ( this->_inputMessageGetId( ) == id ) {// Ack attendu
-							return true;
-						}
-					}
-				}
-			}
-		}
-	}
+    unsigned long now = millis( );
+    while ( ( millis() - now ) < ACKTIMEOUT ) {
+        while ( this->_serial->available() ) {
+            if ( this->_read( ) ) {
+                if ( this->_inputMessageValidateChecksum( ) ) {
+                    debugln( "CRC OK" );
+                    if ( this->_inputMessageGetAction( ) != 0 ) {    // Un message
+                        this->_processMessage( );
+                        this->_inputIndex = 0;                      //Restauration des parametres par defaut
+                    }
+                    else {                                          // Un ack
+                        if ( this->_inputMessageGetId( ) == id ) {// Ack attendu
+                            return true;
+                        }
+                    }
+                }
+                else {
+
+                    debugln( "Bad CRC" );
+                }
+            }
+        }
+    }
 	return false;
 }
 
@@ -208,32 +231,36 @@ int SerialComm::_inputMessageGetId( void ) {
 /******************************************************
  Ecrit un octet en l echappant si necessaire
  *****************************************************/
-bool SerialComm::_safeWrite( byte octet ) {
-  switch ( octet ) {
+bool SerialComm::_safeWrite( byte octet , bool checksum ) {
+    if ( checksum ) {
+        this->_checksum ^= this->_checksum;
+    }
+
+    switch ( octet ) {
     case START:
-      this->_serial->write( ESC );
-      this->_serial->write( TSTART );
-      //mySerial.print(ESC, HEX);
-      //mySerial.print(TSTART, HEX);
-      break;
+        this->_serial->write( ESC );
+        this->_serial->write( TSTART );
+        //mySerial.print(ESC, HEX);
+        //mySerial.print(TSTART, HEX);
+        break;
     case END:
-      this->_serial->write( ESC );
-      this->_serial->write( TEND );
-      //mySerial.print(ESC, HEX);
-      //mySerial.print(TEND, HEX);
-      break;
+        this->_serial->write( ESC );
+        this->_serial->write( TEND );
+        //mySerial.print(ESC, HEX);
+        //mySerial.print(TEND, HEX);
+        break;
     case ESC:
-      this->_serial->write( ESC );
-      this->_serial->write( TESC );
-      //mySerial.print(ESC, HEX);
-      //mySerial.print(TESC, HEX);
-      break;
+        this->_serial->write( ESC );
+        this->_serial->write( TESC );
+        //mySerial.print(ESC, HEX);
+        //mySerial.print(TESC, HEX);
+        break;
     default:
-      this->_serial->write( octet );
-      //mySerial.print(octet, HEX);
-      break;
-  }      
-  return true;
+        this->_serial->write( octet );
+        //mySerial.print(octet, HEX);
+        break;
+    }
+    return true;
 }
 
 
@@ -244,6 +271,8 @@ bool SerialComm::_safeWrite( byte octet ) {
 Envoi le message
 ******************************************************/
 bool SerialComm::sendMessage( byte action , bool ack , const char * fmt , ... ) {
+
+    debugln( "-> sendMessage - enter" );
 
 	va_list args;
 	va_start( args , fmt );
@@ -291,59 +320,28 @@ Envoi un message
 ******************************************************/
 bool SerialComm::_sendMessage( byte action , byte id , const char *fmt , va_list args ) {
 
-	byte checksum = 0;
-	const char *tmpfmt = fmt;
+	this->_checksum = 0;
 
-	this->_checkSum( &checksum , id );                       // Checksum de l'id
-	this->_checkSum( &checksum , action );                   // Checksum de l'action
-
-	va_list args2;
-    va_copy( args2 , args );
+	this->sendHeader( id, action );
 
 	while ( *fmt != '\0' ) {
 		if ( *fmt == 'i' ) {
 			int i = va_arg( args , int );
-			this->_checkSum( &checksum , i >> 8 );
-			this->_checkSum( &checksum , i & 0xFF );
+			this->_safeWrite( i >> 8 , true );
+			this->_safeWrite( i & 0xFF , true );
 		}
 		else if ( *fmt == 's' ) {
 			char *s = va_arg( args , char * );
 			while ( *s != '\0' ) {
-				this->_checkSum( &checksum , *s );
+				this->_safeWrite( *s , true );
 				s++;
 			}
+			this->_safeWrite( 0x00 , true );
 		}
 		fmt++;
 	}
 
-	this->_serial->write( START );
-    //mySerial.print(START, HEX);
-	this->_safeWrite( 0 );
-	this->_safeWrite( id );
-	this->_safeWrite( action );
-
-	fmt = tmpfmt;
-	while ( *fmt != '\0' ) {
-		if ( *fmt == 'i' ) {
-			int i = va_arg( args2 , int );
-			this->_safeWrite( i >> 8 );
-			this->_safeWrite( i & 0xFF );
-		}
-		else if ( *fmt == 's' ) {
-			char *s = va_arg( args2 , char * );
-			while ( *s != '\0' ) {
-				this->_safeWrite( *s );
-				s++;
-			}
-			this->_safeWrite( 0x00 );
-		}
-		fmt++;
-	}
-
-	this->_safeWrite( checksum );
-
-	this->_serial->write( END );
-    //mySerial.print(END, HEX);
+	this->sendFooter( this->_checksum );
 
 	return true;
 }
@@ -410,4 +408,31 @@ bool SerialComm::getData( const char * fmt , ... ) {
 	va_end( args );
 
 	return true;
+}
+
+
+/******************************************************
+Envoi l entete d un message
+******************************************************/
+void SerialComm::sendHeader( byte id, byte action ) {
+
+    debugln( "-> Send Header" );
+    this->_serial->write( START );
+    this->_safeWrite( 0 , true );            // Free byte
+    this->_safeWrite( id , true );
+    this->_safeWrite( action , true );
+
+}
+
+
+/******************************************************
+Envoi la fin d un message
+******************************************************/
+void SerialComm::sendFooter( byte checksum ) {
+
+    debugln( "-> Send footer" );
+    this->_safeWrite( this->_checksum , false);
+    this->_serial->write( END );
+    debugln( "-> END" );
+
 }

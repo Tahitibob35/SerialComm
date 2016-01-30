@@ -6,7 +6,9 @@
 #ifndef SerialComm_h
 #define SerialComm_h
 
+#ifdef SCDEBUG
 #include <SoftwareSerial.h>
+#endif
 
 
 /*
@@ -40,41 +42,52 @@
 #define ACTIONSLEN 20          //nombre max d actions
 #define ACKTIMEOUT 2000
 
+#define SCDEBUG
+
+#ifdef SCDEBUG
+#include <SoftwareSerial.h>
+#endif
+
 class SerialComm
 {
   public:
     SerialComm( Stream &s );
     SerialComm( void );
-	//SoftwareSerial *debugserial;
     void check_reception(void);
     bool attach(int command, void (*ptrfonction)(void));
     bool sendMessage( byte , bool );   // Envoi un message
     bool sendMessage( byte , bool , const char * , ... );   // Envoi un message
+    void sendHeader( byte id, byte action );                // Envoi l entete d un message
+    void sendFooter( byte checksum );                       // Envoi la fin d un message
     bool sendAck( const char * , ... );              // Envoi un accuse avec des donnees
     bool sendAck( void );                                // Envoi un accuse sans donnees
 	bool getData(const char * , ... );                      // Retourne les donnees d un message entrant
+    #ifdef SCDEBUG
+	SoftwareSerial *debugserial;
+    #endif
 
      
   private:
 	Stream *_serial;
     byte _commands[ACTIONSLEN];           // Tableau des actions
     void (*_actions[ACTIONSLEN])(void);   // Tableau des fonctions des actions
-    int  _actioncount;                     // Nombre d actions definies
+    int  _actioncount;                    // Nombre d actions definies
     byte _inputMessage[INPUTMSGLEN];      // Tableau receptionnant le message
-    byte _inputIndex;                    // Nombre de caracteres recus
+    byte _inputIndex;                     // Nombre de caracteres recus
+    byte _checksum;                       // Checksum du message en cours
 
-    void _checkSum( byte * , byte );        // Calcul du checksum
-    void _addCharInInputMessage( char  );          // Ajout du caractere recu au message
-    bool _processMessage( void );                  // Traitement du message
-    bool _safeWrite( byte );                       // Ecrit un octet en l echappant si necessaire
-    bool _waitAck( byte );                         // attend l'arrivee d'un ack
-    bool _sendMessage( byte , byte );             // Envoi le message avec id
-    bool _read( void );                           // lit les donnees du buffer serie
-    byte _inputMessageGetAction( void );           // Retourne l'action du message entrant
-    int  _inputMessageGetId( void );                                     // retourne l id d un message
-    bool _inputMessageValidateChecksum( void );    // Verifie le checksum du message entrant
+    void _checkSum( byte * , byte );                          // Calcul du checksum
+    void _addCharInInputMessage( char  );                     // Ajout du caractere recu au message
+    bool _processMessage( void );                             // Traitement du message
+    bool _safeWrite( byte octet, bool checksum );             // Ecrit un octet en l echappant si necessaire
+    bool _waitAck( byte );                                    // attend l'arrivee d'un ack
+    bool _sendMessage( byte , byte );                         // Envoi le message avec id
+    bool _read( void );                                       // lit les donnees du buffer serie
+    byte _inputMessageGetAction( void );                      // Retourne l'action du message entrant
+    int  _inputMessageGetId( void );                          // retourne l id d un message
+    bool _inputMessageValidateChecksum( void );               // Verifie le checksum du message entrant
     bool _sendMessage( byte , byte , const char* , va_list);  // Envoi un message
-    int  _getNewMessageId( void );                       // Retourne un nouvel id de message
+    int  _getNewMessageId( void );                            // Retourne un nouvel id de message
 
 };
 
