@@ -34,6 +34,10 @@ void loop( ) {
             s.getData( "i" , &another_integer );
             localcounter = another_integer;
         }
+        s.sendHeader( 3 );
+        s.sendcharArray( "Coucou" );
+        s.sendInteger( 55 );
+        s.sendFooter();
     }
 }
 

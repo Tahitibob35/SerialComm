@@ -6,11 +6,6 @@
 #ifndef SerialComm_h
 #define SerialComm_h
 
-#ifdef SCDEBUG
-#include <SoftwareSerial.h>
-#endif
-
-
 /*
   A serial channel is activated by creating an instance of the SerialComm class passing
   a Stream object (hard or soft).
@@ -42,7 +37,7 @@
 #define ACTIONSLEN 20          //nombre max d actions
 #define ACKTIMEOUT 2000
 
-#define SCDEBUG
+#define NSCDEBUG
 
 #ifdef SCDEBUG
 #include <SoftwareSerial.h>
@@ -57,8 +52,8 @@ class SerialComm
     bool attach(int command, void (*ptrfonction)(void));
     bool sendMessage( byte , bool );   // Envoi un message
     bool sendMessage( byte , bool , const char * , ... );   // Envoi un message
-    void sendHeader( byte id, byte action );                // Envoi l entete d un message
-    void sendFooter( byte checksum );                       // Envoi la fin d un message
+    void sendHeader( byte action );                         // Envoi l entete d un message sans ID
+    void sendFooter( void );                                // Envoi la fin d un message
     void sendInteger( int  value );                         // Envoi un entier
     void sendcharArray( char * string );                    // Envoi une chaine
     bool sendAck( const char * , ... );              // Envoi un accuse avec des donnees
@@ -90,6 +85,7 @@ class SerialComm
     bool _inputMessageValidateChecksum( void );               // Verifie le checksum du message entrant
     bool _sendMessage( byte , byte , const char* , va_list);  // Envoi un message
     int  _getNewMessageId( void );                            // Retourne un nouvel id de message
+    void _sendHeader( byte id, byte action );                // Envoi l entete d un message
 
 };
 

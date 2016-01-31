@@ -2,7 +2,7 @@
 #include "serialcomm.h"
 #include <stdarg.h>
 
-#define SCDEBUG
+#define NSCDEBUG
 
 #ifdef SCDEBUG
 #define debug( X ) this->debugserial->print( X )
@@ -13,9 +13,6 @@
 #define debug( X , ... )
 #define debugln( X , ... )
 #endif
-
-#include <SoftwareSerial.h>
-
 
 SerialComm::SerialComm( Stream &s ): _serial( &s ) {
     this->_inputIndex = 0;                   // Nombre d octets recus
@@ -326,7 +323,7 @@ bool SerialComm::_sendMessage( byte action , byte id , const char *fmt , va_list
 
 	this->_checksum = 0;
 
-	this->sendHeader( id, action );
+	this->_sendHeader( id, action );
 
 	while ( *fmt != '\0' ) {
 		if ( *fmt == 'i' ) {
@@ -340,7 +337,7 @@ bool SerialComm::_sendMessage( byte action , byte id , const char *fmt , va_list
 		fmt++;
 	}
 
-	this->sendFooter( this->_checksum );
+	this->sendFooter( );
 
 	return true;
 }
@@ -411,9 +408,9 @@ bool SerialComm::getData( const char * fmt , ... ) {
 
 
 /******************************************************
-Envoi l entete d un message
+Envoi l entete d un message avec id
 ******************************************************/
-void SerialComm::sendHeader( byte id, byte action ) {
+void SerialComm::_sendHeader( byte id, byte action ) {
 
     debugln( "-> Send Header" );
     this->_serial->write( START );
@@ -425,9 +422,19 @@ void SerialComm::sendHeader( byte id, byte action ) {
 
 
 /******************************************************
+Envoi l entete d un messagesans id
+******************************************************/
+void SerialComm::sendHeader( byte action ) {
+
+    this->_sendHeader( 0, action );
+
+}
+
+
+/******************************************************
 Envoi la fin d un message
 ******************************************************/
-void SerialComm::sendFooter( byte checksum ) {
+void SerialComm::sendFooter( void ) {
 
     debugln( "-> Send footer" );
     this->_safeWrite( this->_checksum , false);
