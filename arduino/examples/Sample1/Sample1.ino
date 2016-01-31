@@ -27,7 +27,8 @@ void loop( ) {
 
         // Send a message with an integer
         int an_integer = 10;
-        if ( s.sendMessage( 2 , true , "i" , an_integer) ) {
+        char string[] = "From arduino";
+        if ( s.sendMessage( 2 , true , "is" , an_integer , string ) ) {
             // Get back the ack and extract an integer
             int another_integer;
             s.getData( "i" , &another_integer );
@@ -44,7 +45,6 @@ void actionB ( void ) {
 	s.getData( "is" , &an_integer , &a_string , sizeof( a_string ) );
 
 	// Send an ack, with values
-	int another_integer = 30;
 	char another_string[20] = "The response";
 	s.sendAck( "is" , localcounter , another_string );
 

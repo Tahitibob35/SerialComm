@@ -32,6 +32,10 @@ SerialComm::SerialComm( void ) {
   this->_inputIndex = 0;                  // Nombre d octets recus
   this->_actioncount = 0;                  // Nombre d actions definies
   this->_serial = NULL;
+  this->_checksum = 0;
+#ifdef SCDEBUG
+    this->debugserial = NULL;
+#endif
 }
 
 /******************************************************
@@ -327,16 +331,11 @@ bool SerialComm::_sendMessage( byte action , byte id , const char *fmt , va_list
 	while ( *fmt != '\0' ) {
 		if ( *fmt == 'i' ) {
 			int i = va_arg( args , int );
-			this->_safeWrite( i >> 8 , true );
-			this->_safeWrite( i & 0xFF , true );
+			this->sendInteger( i );
 		}
 		else if ( *fmt == 's' ) {
 			char *s = va_arg( args , char * );
-			while ( *s != '\0' ) {
-				this->_safeWrite( *s , true );
-				s++;
-			}
-			this->_safeWrite( 0x00 , true );
+			this->sendcharArray( s );
 		}
 		fmt++;
 	}
@@ -434,5 +433,31 @@ void SerialComm::sendFooter( byte checksum ) {
     this->_safeWrite( this->_checksum , false);
     this->_serial->write( END );
     debugln( "-> END" );
+
+}
+
+
+/******************************************************
+Envoi un entier
+******************************************************/
+void SerialComm::sendInteger( int  value ) {
+
+    debugln( "-> Send an integer" );
+    this->_safeWrite( value >> 8 , true );
+    this->_safeWrite( value & 0xFF , true );
+
+}
+
+/******************************************************
+Envoi un entier
+******************************************************/
+void SerialComm::sendcharArray( char * string ) {
+
+    debugln( "-> Send a string" );
+    while ( *string != '\0' ) {
+        this->_safeWrite( *string , true );
+        string++;
+    }
+    this->_safeWrite( 0x00 , true );
 
 }

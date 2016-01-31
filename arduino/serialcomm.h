@@ -59,6 +59,8 @@ class SerialComm
     bool sendMessage( byte , bool , const char * , ... );   // Envoi un message
     void sendHeader( byte id, byte action );                // Envoi l entete d un message
     void sendFooter( byte checksum );                       // Envoi la fin d un message
+    void sendInteger( int  value );                         // Envoi un entier
+    void sendcharArray( char * string );                    // Envoi une chaine
     bool sendAck( const char * , ... );              // Envoi un accuse avec des donnees
     bool sendAck( void );                                // Envoi un accuse sans donnees
 	bool getData(const char * , ... );                      // Retourne les donnees d un message entrant
