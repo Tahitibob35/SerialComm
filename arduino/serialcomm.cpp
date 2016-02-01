@@ -48,6 +48,7 @@ bool SerialComm::_read( void ) {
 	//Serial.println(c);
 	debug("<-Byte received (hex): ");
 	debugln(c, HEX);
+	//Serial.println(c, HEX);
 	//this->serial->print(",");
 	//this->serial->println(c, DEC);
 	//mySerial.print(c, HEX);
@@ -56,6 +57,7 @@ bool SerialComm::_read( void ) {
 	// Check for frame start
 	if ( c == START ) {                            //Debut d'un message, restauration des donnees
 	  debugln("<-START");
+	  //Serial.println( "<-START" );
 	  receptionstarted = true;
 	  this->_inputIndex = 0;
 	  esc = false;
@@ -64,6 +66,7 @@ bool SerialComm::_read( void ) {
 	  if ( receptionstarted ) {
 		if ( c == END ) {                          //Fin d'un message
 		    debugln("<-END");
+		    //Serial.println("<-END");
 		    receptionstarted = false;
 		    //mySerial.println("");
 		    return true;
@@ -94,11 +97,13 @@ void SerialComm::check_reception( void ) {
     if ( this->_read( ) ) {
 		if ( this->_inputMessageValidateChecksum( ) ) {
 		    debugln( "CRC OK" );
+            //Serial.println( "CRC OK" );
 			this->_processMessage( );
 			this->_inputIndex = 0;                 //Restauration des parametres par defaut
 		}
 		else {
 			debug( "Bad CRC" );
+            //Serial.println( "Bad CRC" );
 		}
     }
   }
@@ -115,6 +120,7 @@ bool SerialComm::_waitAck( byte id ) {
             if ( this->_read( ) ) {
                 if ( this->_inputMessageValidateChecksum( ) ) {
                     debugln( "CRC OK" );
+                    //Serial.println( "CRC OK" );
                     if ( this->_inputMessageGetAction( ) != 0 ) {    // Un message
                         this->_processMessage( );
                         this->_inputIndex = 0;                      //Restauration des parametres par defaut
@@ -126,8 +132,8 @@ bool SerialComm::_waitAck( byte id ) {
                     }
                 }
                 else {
-
                     debugln( "Bad CRC" );
+                    //Serial.println( "Bad CRC" );
                 }
             }
         }
@@ -191,7 +197,7 @@ bool SerialComm::_inputMessageValidateChecksum( void ) {
 	}
 
 	if ( this->_inputMessage[this->_inputIndex - 1] != checksum ) {
-		//this->serial->println("Invalid checksum");
+		//Serial.println("Invalid checksum");
 		return false;                                           // Retour en erreur
 	}
 	//this->serial->println("V");
@@ -203,7 +209,7 @@ bool SerialComm::_inputMessageValidateChecksum( void ) {
  Retourne l'action d'un message entrant
  *****************************************************/
 byte SerialComm::_inputMessageGetAction( void ) {
-	return this->_inputMessage[1];
+	return this->_inputMessage[2];
 }
 
 /******************************************************
@@ -225,7 +231,7 @@ bool SerialComm::attach( int command , void ( *ptrfonction )( void )) {
  Retourne l id du message
  *****************************************************/
 int SerialComm::_inputMessageGetId( void ) {
-  return _inputMessage[0];
+  return _inputMessage[1];
 }
 
 
@@ -234,7 +240,7 @@ int SerialComm::_inputMessageGetId( void ) {
  *****************************************************/
 bool SerialComm::_safeWrite( byte octet , bool checksum ) {
     if ( checksum ) {
-        this->_checksum ^= this->_checksum;
+        this->_checksum ^= octet;
     }
 
     switch ( octet ) {
@@ -321,8 +327,6 @@ Envoi un message
 ******************************************************/
 bool SerialComm::_sendMessage( byte action , byte id , const char *fmt , va_list args ) {
 
-	this->_checksum = 0;
-
 	this->_sendHeader( id, action );
 
 	while ( *fmt != '\0' ) {
@@ -369,7 +373,7 @@ bool SerialComm::getData( const char * fmt , ... ) {
 	va_list args;
 	va_start( args, fmt );
 
-	int readindex = 2;
+	int readindex = 3;
 
 	while (*fmt != '\0') {
 		if ( readindex >= ( this->_inputIndex - 1 ) ) return false;            // Verification de fin de message
@@ -413,6 +417,7 @@ Envoi l entete d un message avec id
 void SerialComm::_sendHeader( byte id, byte action ) {
 
     debugln( "-> Send Header" );
+    this->_checksum = 0;
     this->_serial->write( START );
     this->_safeWrite( 0 , true );            // Free byte
     this->_safeWrite( id , true );
