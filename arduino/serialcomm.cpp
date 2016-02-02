@@ -397,6 +397,8 @@ bool SerialComm::getData( const char * fmt , ... ) {
 					s[j++] = c;
 				} while ( ( c != 0 ) && ( j < slen ) );
 				s[slen-1] = 0;
+				Serial.print( "A str : " );
+				Serial.println( s );
 				break;
 			}
 		default:
@@ -472,4 +474,49 @@ void SerialComm::sendcharArray( char * string ) {
     }
     this->_safeWrite( 0x00 , true );
 
+}
+
+
+/******************************************************
+Retourne les donnees d un message entrant
+******************************************************/
+bool SerialComm::getData2( const char * fmt , va_list args ) {
+    //va_list args;
+    //va_start( args, fmt );
+
+    int readindex = 3;
+
+    while (*fmt != '\0') {
+        if ( readindex >= ( this->_inputIndex - 1 ) ) return false;            // Verification de fin de message
+        switch ( *fmt ) {
+        case 'i' :
+            {
+                int * i = va_arg( args , int * );
+                *i = word( _inputMessage[readindex], _inputMessage[readindex + 1] ); // Recompose l entier en lisant 2 octets
+                readindex += 2;
+                break;
+            }
+        case 's' :
+            {
+                char *s = va_arg( args, char * );
+                int slen = va_arg( args , int );
+
+                char c = 0;
+                int j = 0;
+                do {
+                    c = _inputMessage[readindex++];
+                    s[j++] = c;
+                } while ( ( c != 0 ) && ( j < slen ) );
+                s[slen-1] = 0;
+                break;
+            }
+        default:
+            return false;
+        }
+        ++fmt;
+    }
+
+    //va_end( args );
+
+    return true;
 }

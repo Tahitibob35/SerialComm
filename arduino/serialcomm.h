@@ -59,7 +59,8 @@ class SerialComm
     bool sendAck( const char * , ... );              // Envoi un accuse avec des donnees
     bool sendAck( void );                                // Envoi un accuse sans donnees
 	bool getData(const char * , ... );                      // Retourne les donnees d un message entrant
-    #ifdef SCDEBUG
+	bool getData2(const char * , va_list );                      // Retourne les donnees d un message entrant
+ #ifdef SCDEBUG
 	SoftwareSerial *debugserial;
     #endif
 
