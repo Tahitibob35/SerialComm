@@ -59,7 +59,8 @@ class SerialComm
     bool sendAck( const char * , ... );              // Envoi un accuse avec des donnees
     bool sendAck( void );                                // Envoi un accuse sans donnees
 	bool getData(const char * , ... );                      // Retourne les donnees d un message entrant
-	bool getData2(const char * , va_list );                      // Retourne les donnees d un message entrant
+	int getInt( void );                                    // Lit un entier dans le message
+	void getString( char *buf , int maxsize );              // Lit une chaine dans le message
  #ifdef SCDEBUG
 	SoftwareSerial *debugserial;
     #endif
@@ -73,6 +74,7 @@ class SerialComm
     byte _inputMessage[INPUTMSGLEN];      // Tableau receptionnant le message
     byte _inputIndex;                     // Nombre de caracteres recus
     byte _checksum;                       // Checksum du message en cours
+    int _readindex;                       // index de lecture
 
     void _checkSum( byte * , byte );                          // Calcul du checksum
     void _addCharInInputMessage( char  );                     // Ajout du caractere recu au message

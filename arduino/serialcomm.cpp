@@ -30,6 +30,7 @@ SerialComm::SerialComm( void ) {
   this->_actioncount = 0;                  // Nombre d actions definies
   this->_serial = NULL;
   this->_checksum = 0;
+  this->_readindex = 3;
 #ifdef SCDEBUG
     this->debugserial = NULL;
 #endif
@@ -69,6 +70,7 @@ bool SerialComm::_read( void ) {
 		    //Serial.println("<-END");
 		    receptionstarted = false;
 		    //mySerial.println("");
+		    this->_readindex = 3;
 		    return true;
 		}
 		else {
@@ -373,16 +375,16 @@ bool SerialComm::getData( const char * fmt , ... ) {
 	va_list args;
 	va_start( args, fmt );
 
-	int readindex = 3;
+	this->_readindex = 3;
 
 	while (*fmt != '\0') {
-		if ( readindex >= ( this->_inputIndex - 1 ) ) return false;            // Verification de fin de message
+		if ( this->_readindex >= ( this->_inputIndex - 1 ) ) return false;            // Verification de fin de message
 		switch ( *fmt ) {
 		case 'i' :
 			{
 				int * i = va_arg( args , int * );
-				*i = word( _inputMessage[readindex], _inputMessage[readindex + 1] ); // Recompose l entier en lisant 2 octets
-				readindex += 2;
+				*i = this->getInt();
+				this->_readindex += 2;
 				break;
 			}
 		case 's' :
@@ -393,7 +395,7 @@ bool SerialComm::getData( const char * fmt , ... ) {
 				char c = 0;
 				int j = 0;
 				do {
-					c = _inputMessage[readindex++];
+					c = _inputMessage[this->_readindex++];
 					s[j++] = c;
 				} while ( ( c != 0 ) && ( j < slen ) );
 				s[slen-1] = 0;
@@ -478,45 +480,26 @@ void SerialComm::sendcharArray( char * string ) {
 
 
 /******************************************************
-Retourne les donnees d un message entrant
+Lit un entier dans le message
 ******************************************************/
-bool SerialComm::getData2( const char * fmt , va_list args ) {
-    //va_list args;
-    //va_start( args, fmt );
+int SerialComm::getInt( void ) {
+    int i = word( _inputMessage[this->_readindex], _inputMessage[this->_readindex + 1] ); // Recompose l entier en lisant 2 octets
+    this->_readindex += 2;
+    return i;
+}
 
-    int readindex = 3;
 
-    while (*fmt != '\0') {
-        if ( readindex >= ( this->_inputIndex - 1 ) ) return false;            // Verification de fin de message
-        switch ( *fmt ) {
-        case 'i' :
-            {
-                int * i = va_arg( args , int * );
-                *i = word( _inputMessage[readindex], _inputMessage[readindex + 1] ); // Recompose l entier en lisant 2 octets
-                readindex += 2;
-                break;
-            }
-        case 's' :
-            {
-                char *s = va_arg( args, char * );
-                int slen = va_arg( args , int );
-
-                char c = 0;
-                int j = 0;
-                do {
-                    c = _inputMessage[readindex++];
-                    s[j++] = c;
-                } while ( ( c != 0 ) && ( j < slen ) );
-                s[slen-1] = 0;
-                break;
-            }
-        default:
-            return false;
-        }
-        ++fmt;
-    }
-
-    //va_end( args );
-
-    return true;
+/******************************************************
+Lit une chaine dans le message
+******************************************************/
+void SerialComm::getString( char *buf , int maxsize ) {
+    char c = 0;
+    int j = 0;
+    do {
+        c = _inputMessage[this->_readindex++];
+        buf[j++] = c;
+    } while ( ( c != 0 ) && ( j < maxsize ) );
+    buf[maxsize-1] = 0;
+    Serial.print( "A str : " );
+    Serial.println( buf );
 }
