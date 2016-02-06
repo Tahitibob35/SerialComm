@@ -23,7 +23,7 @@ void loop( ) {
     }
     unsigned long currentMillis = millis();
 
-    if ( currentMillis - previousMillis >= interval ) {
+    /*if ( currentMillis - previousMillis >= interval ) {
         previousMillis = currentMillis;
 
         // Send a message with an integer
@@ -39,7 +39,7 @@ void loop( ) {
         s.sendcharArray( "Coucou" );
         s.sendInteger( 55 );
         s.sendFooter();
-    }
+    }*/
 }
 
 void actionB ( void ) {

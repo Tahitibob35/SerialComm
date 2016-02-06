@@ -18,6 +18,7 @@ SerialComm::SerialComm( Stream &s ): _serial( &s ) {
     this->_inputIndex = 0;                   // Nombre d octets recus
     this->_actioncount = 0;                  // Nombre d actions definies
     this->_checksum = 0;
+    this->_readindex = 3;
 #ifdef SCDEBUG
     this->debugserial = new SoftwareSerial( 10 , 11 );
     this->debugserial->begin( 9600 );
@@ -189,18 +190,37 @@ bool SerialComm::_processMessage( void ) {
     else {                       // Internal action
         debugln( "_processMessage : internal action" );
         this->_readindex = 3;
-        int pin = this->getInt();
-        int value = this->getInt();
         switch ( this->_inputMessageGetAction( ) ) {
         case A_DIGITALWRITE:
+        {
+            uint8_t pin = this->getInt();
+            int value = this->getInt();
             debugln( "_processMessage : A_DIGITALWRITE" );
             digitalWrite( pin , value );
             break;
+        }
         case A_ANALOGWRITE:
+        {
+            uint8_t pin = this->getInt();
+            int value = this->getInt();
             debugln( "_processMessage : A_ANALOGWRITE" );
             analogWrite( pin , value );
             break;
-
+        }
+        case A_DIGITALREAD:
+        {
+            uint8_t pin = this->getInt();
+            debugln( "_processMessage : A_DIGITALREAD" );
+            this->sendAck( "i" , digitalRead( pin ) );
+            break;
+        }
+        case A_ANALOGREAD:
+        {
+            uint8_t pin = this->getInt();
+            debugln( "_processMessage : A_ANALOGWRITE" );
+            this->sendAck( "i" , analogRead( pin ) );
+            break;
+        }
 
         }
     }
@@ -546,3 +566,12 @@ Ecrit sur une sortie analogique
 void SerialComm::sendAnalogWrite( uint8_t pin , int value) {
     analogWrite( pin , value);
 }
+
+
+/******************************************************
+Lit sur une sortie numerique
+******************************************************/
+uint8_t SerialComm::sendDigitalRead( uint8_t pin , int value) {
+    return digitalRead( pin );
+}
+

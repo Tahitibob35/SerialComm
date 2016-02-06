@@ -39,7 +39,11 @@
 
 //Local actions
 #define A_DIGITALWRITE             10
-#define A_ANALOGWRITE             11
+#define A_ANALOGWRITE              11
+#define A_DIGITALREAD              12
+#define A_ANALOGREAD               13
+
+
 
 #define SCDEBUG
 
@@ -67,6 +71,7 @@ class SerialComm
 	void getString( char *buf , int maxsize );              // Lit une chaine dans le message
 	void sendDigitalWrite( uint8_t pin , uint8_t value);    // Ecrit sur une sortie numerique
 	void sendAnalogWrite( uint8_t pin , int value);         // Ecrit sur une sortie analogique
+	uint8_t sendDigitalRead( uint8_t pin , int value);      // Lit sur une sortie numerique
  #ifdef SCDEBUG
 	SoftwareSerial *debugserial;
     #endif
