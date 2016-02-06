@@ -37,7 +37,10 @@
 #define ACTIONSLEN 20          //nombre max d actions
 #define ACKTIMEOUT 2000
 
-#define NSCDEBUG
+//Local actions
+#define A_DIGITALWRITE             10
+
+#define SCDEBUG
 
 #ifdef SCDEBUG
 #include <SoftwareSerial.h>
@@ -59,8 +62,9 @@ class SerialComm
     bool sendAck( const char * , ... );              // Envoi un accuse avec des donnees
     bool sendAck( void );                                // Envoi un accuse sans donnees
 	bool getData(const char * , ... );                      // Retourne les donnees d un message entrant
-	int getInt( void );                                    // Lit un entier dans le message
+	int  getInt( void );                                    // Lit un entier dans le message
 	void getString( char *buf , int maxsize );              // Lit une chaine dans le message
+	void sendDigitalWrite( uint8_t pin , uint8_t value);        // Ecrit sur une sortie numerique
  #ifdef SCDEBUG
 	SoftwareSerial *debugserial;
     #endif

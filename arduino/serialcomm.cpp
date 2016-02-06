@@ -2,7 +2,7 @@
 #include "serialcomm.h"
 #include <stdarg.h>
 
-#define NSCDEBUG
+//#define SCDEBUG
 
 #ifdef SCDEBUG
 #define debug( X ) this->debugserial->print( X )
@@ -170,16 +170,39 @@ void SerialComm::_checkSum( byte  *checksum , byte data ) {
  *****************************************************/
 bool SerialComm::_processMessage( void ) {
 
-	for( int i=0 ; i < this->_actioncount ; i++ ) {
-		//Serial.print("Looking for an action... : ");
-		//Serial.println(this->_inputMessageGetAction( ));
-		if ( this->_inputMessageGetAction( ) == this->_commands[i] ) {
-			//Serial.println("Action found !");
-			( *this->_actions[i] )( );
-			break;
-		}
-	}
-	return true;
+    debug( "_processMessage : actionid : " );
+    debugln( this->_inputMessageGetAction( ) );
+
+    if ( this->_inputMessageGetAction( ) >= 100 ) {
+        debugln( "_processMessage : user defined action" );
+        for( int i=0 ; i < this->_actioncount ; i++ ) {
+            //Serial.print("Looking for an action... : ");
+            //Serial.println(this->_inputMessageGetAction( ));
+            if ( this->_inputMessageGetAction( ) == this->_commands[i] ) {
+                //Serial.println("Action found !");
+                ( *this->_actions[i] )( );
+                break;
+            }
+        }
+        return true;
+    }
+    else {                       // Internal action
+        debugln( "_processMessage : internal action" );
+        this->_readindex = 3;
+        switch ( this->_inputMessageGetAction( ) ) {
+        case A_DIGITALWRITE:
+            debugln( "_processMessage : A_DIGITALWRITE" );
+            int pin = this->getInt( );
+            int value = this->getInt( );
+            digitalWrite( pin , value );
+            break;
+
+
+        }
+    }
+
+
+    return true;
 
 }
 
@@ -503,3 +526,13 @@ void SerialComm::getString( char *buf , int maxsize ) {
     Serial.print( "A str : " );
     Serial.println( buf );
 }
+
+
+/******************************************************
+Ecrit sur une sortie numerique
+******************************************************/
+void SerialComm::sendDigitalWrite( uint8_t pin , uint8_t value) {
+    digitalWrite( pin , value);
+
+}
+

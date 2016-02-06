@@ -4,7 +4,7 @@
 SerialComm s(Serial);
 
 unsigned long previousMillis = 0;
-const long interval = 1000;
+const long interval = 3000;
 int localcounter = 0;
 
 void setup( ) {
@@ -12,6 +12,7 @@ void setup( ) {
 
     // Attach the action #2 to the actionB function
     s.attach( 2 , actionB );
+    pinMode(8, OUTPUT);
 }
 
 
