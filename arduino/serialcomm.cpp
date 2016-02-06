@@ -551,27 +551,3 @@ void SerialComm::getString( char *buf , int maxsize ) {
     Serial.println( buf );
 }
 
-
-/******************************************************
-Ecrit sur une sortie numerique
-******************************************************/
-void SerialComm::sendDigitalWrite( uint8_t pin , uint8_t value) {
-    digitalWrite( pin , value);
-}
-
-
-/******************************************************
-Ecrit sur une sortie analogique
-******************************************************/
-void SerialComm::sendAnalogWrite( uint8_t pin , int value) {
-    analogWrite( pin , value);
-}
-
-
-/******************************************************
-Lit sur une sortie numerique
-******************************************************/
-uint8_t SerialComm::sendDigitalRead( uint8_t pin , int value) {
-    return digitalRead( pin );
-}
-

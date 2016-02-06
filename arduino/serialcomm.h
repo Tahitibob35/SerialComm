@@ -69,10 +69,8 @@ class SerialComm
 	bool getData(const char * , ... );                      // Retourne les donnees d un message entrant
 	int  getInt( void );                                    // Lit un entier dans le message
 	void getString( char *buf , int maxsize );              // Lit une chaine dans le message
-	void sendDigitalWrite( uint8_t pin , uint8_t value);    // Ecrit sur une sortie numerique
-	void sendAnalogWrite( uint8_t pin , int value);         // Ecrit sur une sortie analogique
-	uint8_t sendDigitalRead( uint8_t pin , int value);      // Lit sur une sortie numerique
- #ifdef SCDEBUG
+
+#ifdef SCDEBUG
 	SoftwareSerial *debugserial;
     #endif
 
