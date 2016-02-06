@@ -189,12 +189,16 @@ bool SerialComm::_processMessage( void ) {
     else {                       // Internal action
         debugln( "_processMessage : internal action" );
         this->_readindex = 3;
+        int pin = this->getInt();
+        int value = this->getInt();
         switch ( this->_inputMessageGetAction( ) ) {
         case A_DIGITALWRITE:
             debugln( "_processMessage : A_DIGITALWRITE" );
-            int pin = this->getInt( );
-            int value = this->getInt( );
             digitalWrite( pin , value );
+            break;
+        case A_ANALOGWRITE:
+            debugln( "_processMessage : A_ANALOGWRITE" );
+            analogWrite( pin , value );
             break;
 
 
@@ -533,6 +537,12 @@ Ecrit sur une sortie numerique
 ******************************************************/
 void SerialComm::sendDigitalWrite( uint8_t pin , uint8_t value) {
     digitalWrite( pin , value);
-
 }
 
+
+/******************************************************
+Ecrit sur une sortie analogique
+******************************************************/
+void SerialComm::sendAnalogWrite( uint8_t pin , int value) {
+    analogWrite( pin , value);
+}

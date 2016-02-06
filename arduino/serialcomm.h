@@ -39,6 +39,7 @@
 
 //Local actions
 #define A_DIGITALWRITE             10
+#define A_ANALOGWRITE             11
 
 #define SCDEBUG
 
@@ -59,12 +60,13 @@ class SerialComm
     void sendFooter( void );                                // Envoi la fin d un message
     void sendInteger( int  value );                         // Envoi un entier
     void sendcharArray( char * string );                    // Envoi une chaine
-    bool sendAck( const char * , ... );              // Envoi un accuse avec des donnees
-    bool sendAck( void );                                // Envoi un accuse sans donnees
+    bool sendAck( const char * , ... );                     // Envoi un accuse avec des donnees
+    bool sendAck( void );                                   // Envoi un accuse sans donnees
 	bool getData(const char * , ... );                      // Retourne les donnees d un message entrant
 	int  getInt( void );                                    // Lit un entier dans le message
 	void getString( char *buf , int maxsize );              // Lit une chaine dans le message
-	void sendDigitalWrite( uint8_t pin , uint8_t value);        // Ecrit sur une sortie numerique
+	void sendDigitalWrite( uint8_t pin , uint8_t value);    // Ecrit sur une sortie numerique
+	void sendAnalogWrite( uint8_t pin , int value);         // Ecrit sur une sortie analogique
  #ifdef SCDEBUG
 	SoftwareSerial *debugserial;
     #endif

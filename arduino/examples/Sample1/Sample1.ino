@@ -12,7 +12,7 @@ void setup( ) {
 
     // Attach the action #2 to the actionB function
     s.attach( 2 , actionB );
-    pinMode(8, OUTPUT);
+    pinMode(5, OUTPUT);
 }
 
 
