@@ -45,7 +45,7 @@
 
 
 
-#define SCDEBUG
+#define NSCDEBUG
 
 #ifdef SCDEBUG
 #include <SoftwareSerial.h>
@@ -69,6 +69,8 @@ class SerialComm
 	bool getData(const char * , ... );                      // Retourne les donnees d un message entrant
 	int  getInt( void );                                    // Lit un entier dans le message
 	void getString( char *buf , int maxsize );              // Lit une chaine dans le message
+	int rDigitalRead( uint8_t pin );                        // digitalRead a distance
+	int rAnalogRead( uint8_t pin );                         //analogRead a distance
 
 #ifdef SCDEBUG
 	SoftwareSerial *debugserial;

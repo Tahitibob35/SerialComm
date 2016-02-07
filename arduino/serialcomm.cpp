@@ -296,24 +296,17 @@ bool SerialComm::_safeWrite( byte octet , bool checksum ) {
     case START:
         this->_serial->write( ESC );
         this->_serial->write( TSTART );
-        //mySerial.print(ESC, HEX);
-        //mySerial.print(TSTART, HEX);
         break;
     case END:
         this->_serial->write( ESC );
         this->_serial->write( TEND );
-        //mySerial.print(ESC, HEX);
-        //mySerial.print(TEND, HEX);
         break;
     case ESC:
         this->_serial->write( ESC );
         this->_serial->write( TESC );
-        //mySerial.print(ESC, HEX);
-        //mySerial.print(TESC, HEX);
         break;
     default:
         this->_serial->write( octet );
-        //mySerial.print(octet, HEX);
         break;
     }
     return true;
@@ -549,5 +542,27 @@ void SerialComm::getString( char *buf , int maxsize ) {
     buf[maxsize-1] = 0;
     Serial.print( "A str : " );
     Serial.println( buf );
+}
+
+
+/******************************************************
+digitalRead a distance
+******************************************************/
+int SerialComm::rDigitalRead( uint8_t pin ) {
+    int i = 0;
+    this->sendMessage( A_DIGITALREAD , true , "i" , pin );
+    this->getData( "i" , &i );
+    return i;
+}
+
+
+/******************************************************
+analogRead a distance
+******************************************************/
+int SerialComm::rAnalogRead( uint8_t pin ) {
+    int i = 0;
+    this->sendMessage( A_ANALOGREAD , true , "i" , pin );
+    this->getData( "i" , &i );
+    return i;
 }
 
