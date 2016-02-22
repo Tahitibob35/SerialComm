@@ -566,3 +566,18 @@ int SerialComm::rAnalogRead( uint8_t pin ) {
     return i;
 }
 
+
+/******************************************************
+analogWrite a distance
+******************************************************/
+void SerialComm::rAnalogWrite( int pin ,  int value ) {
+    this->sendMessage( A_ANALOGWRITE , false , "ii" , pin , value );
+}
+
+
+/******************************************************
+digitalWrite a distance
+******************************************************/
+void SerialComm::rDigitalWrite( int pin ,  int value ) {
+    this->sendMessage( A_DIGITALWRITE , false , "ii" , pin , value );
+}

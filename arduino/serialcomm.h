@@ -70,7 +70,9 @@ class SerialComm
 	int  getInt( void );                                    // Lit un entier dans le message
 	void getString( char *buf , int maxsize );              // Lit une chaine dans le message
 	int rDigitalRead( uint8_t pin );                        // digitalRead a distance
-	int rAnalogRead( uint8_t pin );                         //analogRead a distance
+	int rAnalogRead( uint8_t pin );                         // analogRead a distance
+	void rAnalogWrite( int pin , int value );               // analogWrite a distance
+    void rDigitalWrite( int pin , int value );              // digitalWrite a distance
 
 #ifdef SCDEBUG
 	SoftwareSerial *debugserial;
