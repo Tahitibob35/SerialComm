@@ -42,6 +42,8 @@
 #define A_ANALOGWRITE              11
 #define A_DIGITALREAD              12
 #define A_ANALOGREAD               13
+#define A_ISWRITABLE               14
+#define A_DIGITALPINSTATE          15
 
 
 
@@ -66,13 +68,16 @@ class SerialComm
     void sendcharArray( char * string );                    // Envoi une chaine
     bool sendAck( const char * , ... );                     // Envoi un accuse avec des donnees
     bool sendAck( void );                                   // Envoi un accuse sans donnees
-	bool getData(const char * , ... );                      // Retourne les donnees d un message entrant
-	int  getInt( void );                                    // Lit un entier dans le message
-	void getString( char *buf , int maxsize );              // Lit une chaine dans le message
-	int rDigitalRead( uint8_t pin );                        // digitalRead a distance
-	int rAnalogRead( uint8_t pin );                         // analogRead a distance
-	void rAnalogWrite( int pin , int value );               // analogWrite a distance
-    void rDigitalWrite( int pin , int value );              // digitalWrite a distance
+    bool getData(const char * , ... );                      // Retourne les donnees d un message entrant
+    int  getInt( void );                                    // Lit un entier dans le message
+    void getString( char *buf , int maxsize );              // Lit une chaine dans le message
+    int  rDigitalRead( uint8_t pin );                       // digitalRead a distance
+    int  rAnalogRead( uint8_t pin );                        // analogRead a distance
+    void rAnalogWrite( uint8_t pin , int value);            // analogWrite a distance
+    void rDigitalWrite( uint8_t pin , int value);           // digitalWrite a distance
+    bool isWritable( uint8_t pin );                         // Return true if remote pin is set as ouput
+    void rdigitalPinState( int pin , int * rw , int * pwm_cap , int * pwm_enabled , int * value); // Return the state of the digital pin
+    
 
 #ifdef SCDEBUG
 	SoftwareSerial *debugserial;
@@ -101,7 +106,10 @@ class SerialComm
     bool _inputMessageValidateChecksum( void );               // Verifie le checksum du message entrant
     bool _sendMessage( byte , byte , const char* , va_list);  // Envoi un message
     int  _getNewMessageId( void );                            // Retourne un nouvel id de message
-    void _sendHeader( byte id, byte action );                // Envoi l entete d un message
+    void _sendHeader( byte id, byte action );                 // Envoi l entete d un message
+    #if defined(__AVR_ATmega328__)
+    void _cb_digitalPinState( void );                         // Return the state of the digital pin of the local
+    #endif
 
 };
 

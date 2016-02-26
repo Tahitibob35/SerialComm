@@ -136,6 +136,41 @@ These samples communicate together using the SoftwareSerial library.
 SerialComm s(Serial);  // Use hardware serial port
 ```
 
+## Remote digitalRead
+
+```c
+int  rDigitalRead( uint8_t pin );
+```
+
+## Remote analogRead
+
+```c
+int  rAnalogRead( uint8_t pin );
+```
+
+## Remote analogWrite
+
+```c
+void rAnalogWrite( uint8_t pin , int value);
+```
+
+## Remote digitalWrite
+
+```c
+void rDigitalWrite( uint8_t pin , int value);
+```
+
+## Get the complete state of a digital pin
+
+```c
+void rdigitalPinState( int pin , int * rw , int * pwm_cap , int * pwm_enabled , int * value);
+```
+
+rw : Writable or not
+pwm_cap : PWM capable pin
+pwm_enabled : PWM enabled or not
+value : Current value (LOW, HIG, 0-255)
+
 ## Attach an action id to a callback function
 
 ```c

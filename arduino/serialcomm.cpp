@@ -221,6 +221,16 @@ bool SerialComm::_processMessage( void ) {
             this->sendAck( "i" , analogRead( pin ) );
             break;
         }
+        #if defined(__AVR_ATmega328__)
+        case A_DIGITALPINSTATE:
+        {
+            uint8_t pin = this->getInt();
+            debugln( "_processMessage : A_DIGITALPINSTATE" );
+            this->_cb_digitalPinState();
+            break;
+        }
+        #endif
+
 
         }
     }
@@ -424,7 +434,7 @@ bool SerialComm::getData( const char * fmt , ... ) {
 			{
 				int * i = va_arg( args , int * );
 				*i = this->getInt();
-				this->_readindex += 2;
+				//this->_readindex += 2;
 				break;
 			}
 		case 's' :
@@ -570,7 +580,7 @@ int SerialComm::rAnalogRead( uint8_t pin ) {
 /******************************************************
 analogWrite a distance
 ******************************************************/
-void SerialComm::rAnalogWrite( int pin ,  int value ) {
+void SerialComm::rAnalogWrite( uint8_t pin , int value) {
     this->sendMessage( A_ANALOGWRITE , false , "ii" , pin , value );
 }
 
@@ -578,6 +588,97 @@ void SerialComm::rAnalogWrite( int pin ,  int value ) {
 /******************************************************
 digitalWrite a distance
 ******************************************************/
-void SerialComm::rDigitalWrite( int pin ,  int value ) {
+void SerialComm::rDigitalWrite( uint8_t pin , int value) {
     this->sendMessage( A_DIGITALWRITE , false , "ii" , pin , value );
 }
+
+
+/******************************************************
+Return true if remote pin is set as ouput
+******************************************************/
+bool SerialComm::isWritable( uint8_t pin ) {
+    int i = 0;
+    this->sendMessage( A_ISWRITABLE , true , "i" , pin );
+    this->getData( "i" , &i );
+    return i;
+}
+
+
+/******************************************************
+Return the state of the digital pin of the remote
+******************************************************/
+void SerialComm::rdigitalPinState( int pin , int * rw , int * pwm_cap , int * pwm_enabled , int * value) {
+    this->sendMessage( A_DIGITALPINSTATE , true , "i" , pin );
+    this->getData( "iiii" , rw , pwm_cap , pwm_enabled , value );
+}
+
+
+#if defined(__AVR_ATmega328__)
+/******************************************************
+Return the state of the digital pin of the local
+******************************************************/
+void SerialComm::_cb_digitalPinState( void ) {
+    int pin = 0;
+    this->getData( "i" , &pin );
+    int rw = 0;
+    int pwm_cap = 0;
+    int pwm_enabled = 0;
+    int value = 0;
+    
+    // RW    
+    uint8_t bit = digitalPinToBitMask( pin );
+    uint8_t port = digitalPinToPort( pin );
+    volatile uint8_t *reg = portModeRegister( port );
+    if ( *reg & bit ) {
+         rw = true;
+         uint8_t timer = digitalPinToTimer( pin );
+         if ( timer != NOT_ON_TIMER ) {
+         pwm_cap = true;
+         uint8_t timerstate = -1;
+             switch ( timer ) {      // Get the state of the associated timer
+                 case TIMER1A: timerstate = bitRead( TCCR1A , COM1A1 ); break;  // pin 9
+                 case TIMER1B: timerstate = bitRead( TCCR1A , COM1B1 ); break;  // pin 10
+                 case TIMER0A: timerstate = bitRead( TCCR0A , COM0A1 ); break;  // pin 6
+                 case TIMER0B: timerstate = bitRead( TCCR0A , COM0B1 ); break;  // pin 5
+                 case TIMER2A: timerstate = bitRead( TCCR2A , COM2A1 ); break;  // pin 11
+                 case TIMER2B: timerstate = bitRead( TCCR2A , COM2B1 ); break;  // pin 3
+             }
+             switch ( timerstate ) {
+                 case -1:       // Timer not found
+                     break;
+                 case 0:        // PWM is off
+                     pwm_enabled = false;
+                     if (*portInputRegister(port) & bit) {     // Read the digital value
+                         value = HIGH;
+                     }
+                     else {
+                         value = LOW;
+                     }
+                     break;
+                 case 1:        // PWM is on
+                     pwm_enabled = true;
+                     switch ( timer ) {      // Get the value of the associated timer
+                         case TIMER1A: value = OCR1A; break;  // pin 9
+                         case TIMER1B: value = OCR1B; break;  // pin 10
+                         case TIMER0A: value = OCR0A; break;  // pin 6
+                         case TIMER0B: value = OCR0B; break;  // pin 5
+                         case TIMER2A: value = OCR2A; break;  // pin 11
+                         case TIMER2B: value = OCR2B; break;  // pin 3
+                     }
+                     break;
+             }
+         }
+         else {    // not a pwm pin
+             if (*portInputRegister(port) & bit) {     // Read the digital value
+                 value = HIGH;
+             }
+         }   
+    }
+    else {
+        rw = false;
+        pwm = false;
+        value = digitalRead( pin );
+    } 
+    this->sendAck( "iiii" , rw , pwm_cap , pwm_enabled , value );
+}
+#endif
