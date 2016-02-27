@@ -2,13 +2,12 @@
 #include "serialcomm.h"
 #include <stdarg.h>
 
-//#define SCDEBUG
 
 #ifdef SCDEBUG
 #define debug( X ) this->debugserial->print( X )
 #define debugln( X , ... ) this->debugserial->println( X )
 //#define debugln( X , Y ) this->debugserial->println( X , Y )
-#include <SoftwareSerial.h>
+//#include <SoftwareSerial.h>
 #else
 #define debug( X , ... )
 #define debugln( X , ... )
@@ -20,8 +19,9 @@ SerialComm::SerialComm( Stream &s ): _serial( &s ) {
     this->_checksum = 0;
     this->_readindex = 3;
 #ifdef SCDEBUG
-    this->debugserial = new SoftwareSerial( 10 , 11 );
-    this->debugserial->begin( 9600 );
+    //this->debugserial = new SoftwareSerial( 10 , 11 );
+    //this->debugserial->begin( 9600 );
+    this->debugserial = &Serial;
     debugln( "Debug enabled" );
 #endif
 }
@@ -226,7 +226,7 @@ bool SerialComm::_processMessage( void ) {
         {
             uint8_t pin = this->getInt();
             debugln( "_processMessage : A_DIGITALPINSTATE" );
-            this->_cb_digitalPinState();
+            this->_cb_digitalPinState( pin );
             break;
         }
         #endif
@@ -449,8 +449,6 @@ bool SerialComm::getData( const char * fmt , ... ) {
 					s[j++] = c;
 				} while ( ( c != 0 ) && ( j < slen ) );
 				s[slen-1] = 0;
-				Serial.print( "A str : " );
-				Serial.println( s );
 				break;
 			}
 		default:
@@ -617,9 +615,7 @@ void SerialComm::rdigitalPinState( int pin , int * rw , int * pwm_cap , int * pw
 /******************************************************
 Return the state of the digital pin of the local
 ******************************************************/
-void SerialComm::_cb_digitalPinState( void ) {
-    int pin = 0;
-    this->getData( "i" , &pin );
+void SerialComm::_cb_digitalPinState( int pin ) {
     int rw = 0;
     int pwm_cap = 0;
     int pwm_enabled = 0;
@@ -675,8 +671,9 @@ void SerialComm::_cb_digitalPinState( void ) {
          }   
     }
     else {
-        rw = false;
-        pwm = false;
+        rw = 0;
+        pwm_cap = 0;
+        pwm_enabled = 0;
         value = digitalRead( pin );
     } 
     this->sendAck( "iiii" , rw , pwm_cap , pwm_enabled , value );

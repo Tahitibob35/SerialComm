@@ -6,6 +6,10 @@
 #ifndef SerialComm_h
 #define SerialComm_h
 
+
+#define __AVR_ATmega328__
+
+
 /*
   A serial channel is activated by creating an instance of the SerialComm class passing
   a Stream object (hard or soft).
@@ -33,8 +37,8 @@
 #define TEND   0x65    //e
 #define TESC   0x66    //f
 
-#define INPUTMSGLEN 100        //Taille max d'un message entrant
-#define ACTIONSLEN 20          //nombre max d actions
+#define INPUTMSGLEN 200        //Taille max d'un message entrant
+#define ACTIONSLEN 30          //nombre max d actions
 #define ACKTIMEOUT 2000
 
 //Local actions
@@ -47,7 +51,7 @@
 
 
 
-#define NSCDEBUG
+//#define SCDEBUG
 
 #ifdef SCDEBUG
 #include <SoftwareSerial.h>
@@ -80,7 +84,7 @@ class SerialComm
     
 
 #ifdef SCDEBUG
-	SoftwareSerial *debugserial;
+    Stream *debugserial;
     #endif
 
      
@@ -108,7 +112,7 @@ class SerialComm
     int  _getNewMessageId( void );                            // Retourne un nouvel id de message
     void _sendHeader( byte id, byte action );                 // Envoi l entete d un message
     #if defined(__AVR_ATmega328__)
-    void _cb_digitalPinState( void );                         // Return the state of the digital pin of the local
+    void _cb_digitalPinState( int pin );                         // Return the state of the digital pin of the local
     #endif
 
 };
