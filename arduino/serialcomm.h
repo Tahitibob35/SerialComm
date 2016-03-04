@@ -85,7 +85,7 @@ class SerialComm
 
      
   private:
-	Stream *_serial;
+    Stream *_serial;
     byte _commands[ACTIONSLEN];           // Tableau des actions
     void (*_actions[ACTIONSLEN])(void);   // Tableau des fonctions des actions
     int  _actioncount;                    // Nombre d actions definies

@@ -221,7 +221,7 @@ bool SerialComm::_processMessage( void ) {
             this->sendAck( "i" , analogRead( pin ) );
             break;
         }
-        #if defined(__AVR_ATmega328__)
+        #if defined (__AVR_ATmega328P__) || defined (__AVR_ATmega328__)
         case A_DIGITALPINSTATE:
         {
             uint8_t pin = this->getInt();
