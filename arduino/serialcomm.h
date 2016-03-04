@@ -6,10 +6,6 @@
 #ifndef SerialComm_h
 #define SerialComm_h
 
-
-#define __AVR_ATmega328__
-
-
 /*
   A serial channel is activated by creating an instance of the SerialComm class passing
   a Stream object (hard or soft).
@@ -111,7 +107,7 @@ class SerialComm
     bool _sendMessage( byte , byte , const char* , va_list);  // Envoi un message
     int  _getNewMessageId( void );                            // Retourne un nouvel id de message
     void _sendHeader( byte id, byte action );                 // Envoi l entete d un message
-    #if defined(__AVR_ATmega328__)
+    #if defined (__AVR_ATmega328P__) || defined (__AVR_ATmega328__)
     void _cb_digitalPinState( int pin );                         // Return the state of the digital pin of the local
     #endif
 

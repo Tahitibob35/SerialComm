@@ -611,7 +611,7 @@ void SerialComm::rdigitalPinState( int pin , int * rw , int * pwm_cap , int * pw
 }
 
 
-#if defined(__AVR_ATmega328__)
+#if defined (__AVR_ATmega328P__) || defined (__AVR_ATmega328__)
 /******************************************************
 Return the state of the digital pin of the local
 ******************************************************/
